@@ -1,0 +1,88 @@
+/* Landing page layout only — component styles live in their own CSS files */
+
+.landing {
+  font-family: 'Arial', serif;
+  color: #222222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+/* ─── Hero ───────────────────────────────────── */
+.landing-hero {
+  background: #EBF2FC;
+  padding: 80px 40px 90px;
+  text-align: center;
+}
+
+.landing-hero-content {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.landing-hero-sub {
+  font-family: 'Arial', sans-serif;
+  font-size: 0.88rem;
+  color: #555555;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
+}
+
+.landing-hero-title {
+  font-family: 'Arial', serif;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #222222;
+  line-height: 1.2;
+  margin-bottom: 18px;
+  white-space: nowrap; 
+}
+
+/* ─── Main ───────────────────────────────────── */
+.landing-main {
+  flex: 1;
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 50px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.landing-section-title {
+  font-family: 'Arial', serif;
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #222222;
+  margin-bottom: 18px;
+  letter-spacing: 0.01em;
+}
+
+/* ─── University Grid ────────────────────────── */
+.landing-uni-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ─── Features Grid ──────────────────────────── */
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ─── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+  .landing-hero {
+    padding: 50px 20px 60px;
+  }
+  .landing-hero-title {
+    font-size: 2rem;
+  }
+  .landing-main {
+    padding: 36px 20px 48px;
+  }
+}
