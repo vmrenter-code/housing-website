@@ -7,7 +7,7 @@ export default function Footer()
 {
     return (
         <footer className = "footer">
-            <span> 2025 UniHousing </span>
+            <span> 2026 UniHousing </span>
             {FOOTER_LINKS.map((link) => ( 
                 <a key = {link} href = "#" className="footer-link">
                     {link}

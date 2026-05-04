@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar.js';
 import Footer from '../components/Footer.js';
 import SearchBar from '../components/Searchbar.js';
@@ -8,14 +9,14 @@ import { universities, features } from '../data/landingData.js';
 import './LandingPage.css';
 
 export default function Landing() {
+  const navigate = useNavigate();
+
     const handleSearch = (query) => {
-        //todo: navigate to search results with query
-        console.log('Searching for:', query);
+    navigate(`/search?query=${encodeURIComponent(query)}`);
     };
 
     const handleUniversityClick = (name) => {
-            //todo: navigate to search results 
-        console.log('University selected:', name);
+    navigate(`/search?query=${encodeURIComponent(name)}`);
     };
 
     return (

@@ -1,0 +1,129 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.filter-bar-item {
+  position: relative;
+}
+
+.filter-bar-btn {
+  border: 1px solid #cfd6e4;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.filter-bar-btn:hover {
+  border-color: #2f6edb;
+  color: #2f6edb;
+}
+
+.filter-bar-btn-all {
+  font-weight: 700;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.5rem;
+  background: #fff;
+  border: 1px solid #d1d7e0;
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.filter-group label:first-child {
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.35rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  color: #334155;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.price-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-input {
+  flex: 1;
+  border: 1px solid #d1d7e0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font: inherit;
+}
+
+.filter-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.filter-bar-label {
+  font: inherit;
+  color: #334155;
+  font-weight: 500;
+}
+
+.filter-bar-select {
+  border: 1px solid #cfd6e4;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-bar-select:hover {
+  border-color: #2f6edb;
+}
+
+.filter-bar-select:focus {
+  outline: none;
+  border-color: #2f6edb;
+  box-shadow: 0 0 0 2px rgba(47, 110, 219, 0.1);
+}
+
