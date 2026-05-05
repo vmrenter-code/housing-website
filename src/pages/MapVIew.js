@@ -1,11 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import listings from '../data/mockListings';
 import './MapView.css';
 
+const markerPositions = [
+  { top: '30%', left: '38%' },
+  { top: '28%', left: '62%' },
+  { top: '55%', left: '50%' },
+  { top: '68%', left: '32%' },
+  { top: '58%', left: '72%' },
+  { top: '72%', left: '56%' },
+];
+
+const transitStops = [
+  { name: 'Bus Stop A', top: '42%', left: '45%' },
+  { name: 'Bus Stop B', top: '63%', left: '66%' },
+  { name: 'Metro Station', top: '48%', left: '78%' },
+];
+
 export default function MapView() {
-  const [searchValue, setSearchValue] = useState('UCLA, Los Angeles');
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const query = searchParams.get('query') || 'UCLA';
+  const [searchValue, setSearchValue] = useState(query);
+  const [priceLimit, setPriceLimit] = useState('any');
+  const [homeType, setHomeType] = useState('any');
+  const [distanceLimit, setDistanceLimit] = useState('any');
+  const [showTransit, setShowTransit] = useState(false);
+
+  useEffect(() => {
+    setSearchValue(query);
+  }, [query]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate(`/map?query=${encodeURIComponent(searchValue.trim() || 'UCLA')}`);
+  };
+
+  let filteredListings = listings.filter((listing) =>
+    listing.university.toLowerCase().includes(query.toLowerCase())
+  );
+
+  if (priceLimit !== 'any') {
+    filteredListings = filteredListings.filter(
+      (listing) => listing.priceValue <= Number(priceLimit)
+    );
+  }
+
+  if (homeType !== 'any') {
+    filteredListings = filteredListings.filter(
+      (listing) => listing.homeType === homeType
+    );
+  }
+
+  if (distanceLimit !== 'any') {
+    filteredListings = filteredListings.filter(
+      (listing) => listing.distanceValue <= Number(distanceLimit)
+    );
+  }
 
   return (
     <div className="map-view-page">
@@ -13,33 +68,69 @@ export default function MapView() {
 
       <main className="map-view-main">
         <section className="map-toolbar">
-          <input
-            className="map-search-input"
-            type="text"
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Search address, university, city, or zip code..."
-          />
+          <form className="map-search-form" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Search address, university, city, or zip code..."
+              className="map-search-input"
+            />
 
-          <select className="map-filter">
-            <option>Price</option>
+            <button type="submit" className="map-search-button">
+              Search
+            </button>
+          </form>
+
+          <select
+            className="map-filter"
+            value={priceLimit}
+            onChange={(event) => setPriceLimit(event.target.value)}
+          >
+            <option value="any">Price</option>
+            <option value="900">$900 or less</option>
+            <option value="1200">$1,200 or less</option>
+            <option value="1500">$1,500 or less</option>
           </select>
 
-          <select className="map-filter">
-            <option>Housing Type</option>
+          <select
+            className="map-filter"
+            value={homeType}
+            onChange={(event) => setHomeType(event.target.value)}
+          >
+            <option value="any">Housing Type</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Studio">Studio</option>
+            <option value="House">House</option>
+            <option value="Loft">Loft</option>
           </select>
 
-          <select className="map-filter">
-            <option>Distance</option>
+          <select
+            className="map-filter"
+            value={distanceLimit}
+            onChange={(event) => setDistanceLimit(event.target.value)}
+          >
+            <option value="any">Distance</option>
+            <option value="0.5">Within 0.5 mi</option>
+            <option value="1">Within 1 mi</option>
+            <option value="2">Within 2 mi</option>
           </select>
+
+          <button
+            type="button"
+            className={`transit-toggle ${showTransit ? 'active' : ''}`}
+            onClick={() => setShowTransit(!showTransit)}
+          >
+            {showTransit ? 'Hide Transit' : 'Show Transit'}
+          </button>
         </section>
 
         <section className="map-content">
           <aside className="map-list-panel">
-            <h2>{listings.length} Listings Near UCLA</h2>
+            <h2>{filteredListings.length} Listings Near {query || 'Selected Location'}</h2>
 
             <div className="map-listings">
-              {listings.slice(0, 4).map((listing) => (
+              {filteredListings.map((listing) => (
                 <article key={listing.id} className="map-listing-card">
                   <div className="map-listing-image">IMG</div>
 
@@ -49,6 +140,9 @@ export default function MapView() {
                     <p className="map-listing-meta">
                       {listing.bedrooms} • {listing.distance}
                     </p>
+                    <p className="map-listing-transit">
+                      12–20 min by bus to campus
+                    </p>
                   </div>
                 </article>
               ))}
@@ -56,12 +150,50 @@ export default function MapView() {
           </aside>
 
           <section className="mock-map-area">
-            <div className="map-label">Interactive Map Area</div>
+            <div className="radius-circle"></div>
 
-            <button className="price-marker marker-one">$1,200</button>
-            <button className="price-marker marker-two">$900</button>
-            <button className="price-marker marker-three">$850</button>
-            <button className="price-marker marker-four">$1,500</button>
+            <div className="center-marker">
+              <span>📍</span>
+              <p>{query || 'Center Location'}</p>
+            </div>
+
+            {filteredListings.map((listing, index) => {
+              const position = markerPositions[index % markerPositions.length];
+
+              return (
+                <button
+                  key={listing.id}
+                  className="price-marker"
+                  style={{ top: position.top, left: position.left }}
+                  title={listing.title}
+                >
+                  {listing.price.replace('/mo', '')}
+                </button>
+              );
+            })}
+
+            {showTransit && (
+              <>
+                <div className="transit-route route-one"></div>
+                <div className="transit-route route-two"></div>
+
+                {transitStops.map((stop) => (
+                  <div
+                    key={stop.name}
+                    className="transit-stop"
+                    style={{ top: stop.top, left: stop.left }}
+                    title={stop.name}
+                  >
+                    🚌
+                    <span>{stop.name}</span>
+                  </div>
+                ))}
+              </>
+            )}
+
+            <div className="map-label">
+              Interactive Map Area
+            </div>
           </section>
         </section>
       </main>
