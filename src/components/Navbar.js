@@ -14,6 +14,8 @@ export default function Navbar() {
     if (link === 'Map') {
       navigate('/map');
     }
+    if (link === 'Profile')
+      navigate('/signup');
   };
 
   return (

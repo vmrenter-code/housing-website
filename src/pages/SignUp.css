@@ -1,0 +1,19 @@
+.signup {
+  font-family: 'Arial', serif;
+  color: #222222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.signup-main {
+  flex: 1;
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 50px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
