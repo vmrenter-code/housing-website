@@ -1,0 +1,141 @@
+.map-view-page {
+  min-height: 100vh;
+  background: #f4f4f4;
+}
+
+.map-view-main {
+  background: #ffffff;
+}
+
+.map-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #dddddd;
+  background: #ffffff;
+}
+
+.map-search-input {
+  width: 360px;
+  padding: 10px 14px;
+  border: 1px solid #999999;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.map-filter {
+  min-width: 130px;
+  padding: 10px 12px;
+  border: 1px solid #999999;
+  border-radius: 6px;
+  background: white;
+}
+
+.map-content {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: calc(100vh - 190px);
+}
+
+.map-list-panel {
+  padding: 16px;
+  border-right: 1px solid #cccccc;
+  background: #fafafa;
+}
+
+.map-list-panel h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.map-listings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.map-listing-card {
+  overflow: hidden;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  background: white;
+}
+
+.map-listing-image {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d7d7d7;
+  color: #777777;
+}
+
+.map-listing-body {
+  padding: 12px;
+}
+
+.map-listing-body h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.map-listing-price {
+  margin: 0 0 4px;
+  color: #2f66d0;
+  font-weight: 700;
+}
+
+.map-listing-meta {
+  margin: 0;
+  color: #777777;
+  font-size: 13px;
+}
+
+.mock-map-area {
+  position: relative;
+  min-height: 650px;
+  overflow: hidden;
+  background: #dfeee0;
+}
+
+.map-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #777777;
+  font-size: 24px;
+  transform: translate(-50%, -50%);
+}
+
+.price-marker {
+  position: absolute;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #2f66d0;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.marker-one {
+  top: 32%;
+  left: 45%;
+}
+
+.marker-two {
+  top: 28%;
+  left: 70%;
+}
+
+.marker-three {
+  top: 52%;
+  left: 62%;
+}
+
+.marker-four {
+  top: 65%;
+  left: 35%;
+}
