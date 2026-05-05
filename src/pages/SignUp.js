@@ -1,13 +1,100 @@
+import React, { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import './SignUp.css';
 
 export default function SignUp() {
+    const [formData, setFormData] = useState({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        university: "",
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
     return (
-        <div className="signup">
+        <div className="signup-container">
             <Navbar />
+
             <main className="signup-main">
-                <h1>Sign Up Page</h1>
+                <div className="signup-card">
+                    <h2>Create Your Account</h2>
+                    <p className="subtitle">Find housing near your university today</p>
+
+                    <div className="auth-buttons">
+                        <button className="btn-secondary">Continue with Google</button>
+                        <button className="btn-secondary">Continue with University SSO</button>
+                    </div>
+
+                    <div className="divider">
+                        <span>-- or sign up with email --</span>
+                    </div>
+
+                    <form className="signup-form">
+                        <div className="input-group">
+                            <label>Full Name</label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label>University Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label>Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label>Confirm Password</label>
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label>Your University</label>
+                            <input
+                                type="text"
+                                name="university"
+                                placeholder="Search your university..."
+                                value={formData.university}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <button type="submit" className="btn-primary">Create Account</button>
+                    </form>
+
+                    <p className="login-link">
+                        Already have an account? <a href="/login">Log In</a>
+                    </p>
+                </div>
             </main>
+
             <Footer />
         </div>
     );

@@ -1,19 +1,95 @@
-.signup {
-  font-family: 'Arial', serif;
-  color: #222222;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
+.signup-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 120px);
 }
 
-.signup-main {
-  flex: 1;
-  max-width: 1360px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 50px 40px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 50px;
+.signup-card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.signup-card h2 {
+    margin-bottom: 8px;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid #333;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.divider {
+    margin: 20px 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.signup-form {
+    text-align: left;
+}
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.btn-primary {
+    width: 100%;
+    background-color: #3b66cc;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.login-link {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #3b66cc;
+}
+
+.login-link a {
+    text-decoration: none;
+    font-weight: bold;
 }
