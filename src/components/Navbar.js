@@ -11,6 +11,9 @@ export default function Navbar() {
     if (link === 'Browse') {
       navigate('/search');
     }
+    if (link === 'Map') {
+      navigate('/map');
+    }
   };
 
   return (

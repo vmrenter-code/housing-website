@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import listings from '../data/mockListings';
@@ -21,45 +20,42 @@ const transitStops = [
 ];
 
 export default function MapView() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const query = searchParams.get('query') || 'UCLA';
-  const [searchValue, setSearchValue] = useState(query);
+  const [searchValue, setSearchValue] = useState('');
+  const [locationQuery, setLocationQuery] = useState('');
   const [priceLimit, setPriceLimit] = useState('any');
   const [homeType, setHomeType] = useState('any');
   const [distanceLimit, setDistanceLimit] = useState('any');
   const [showTransit, setShowTransit] = useState(false);
 
-  useEffect(() => {
-    setSearchValue(query);
-  }, [query]);
-
-  const handleSubmit = (event) => {
+  const handleSearchSubmit = (event) => {
     event.preventDefault();
-    navigate(`/map?query=${encodeURIComponent(searchValue.trim() || 'UCLA')}`);
+    setLocationQuery(searchValue.trim());
   };
 
-  let filteredListings = listings.filter((listing) =>
-    listing.university.toLowerCase().includes(query.toLowerCase())
-  );
+  let filteredListings = [];
 
-  if (priceLimit !== 'any') {
-    filteredListings = filteredListings.filter(
-      (listing) => listing.priceValue <= Number(priceLimit)
+  if (locationQuery !== '') {
+    filteredListings = listings.filter((listing) =>
+      listing.university.toLowerCase().includes(locationQuery.toLowerCase())
     );
-  }
 
-  if (homeType !== 'any') {
-    filteredListings = filteredListings.filter(
-      (listing) => listing.homeType === homeType
-    );
-  }
+    if (priceLimit !== 'any') {
+      filteredListings = filteredListings.filter(
+        (listing) => listing.priceValue <= Number(priceLimit)
+      );
+    }
 
-  if (distanceLimit !== 'any') {
-    filteredListings = filteredListings.filter(
-      (listing) => listing.distanceValue <= Number(distanceLimit)
-    );
+    if (homeType !== 'any') {
+      filteredListings = filteredListings.filter(
+        (listing) => listing.homeType === homeType
+      );
+    }
+
+    if (distanceLimit !== 'any') {
+      filteredListings = filteredListings.filter(
+        (listing) => listing.distanceValue <= Number(distanceLimit)
+      );
+    }
   }
 
   return (
@@ -68,16 +64,16 @@ export default function MapView() {
 
       <main className="map-view-main">
         <section className="map-toolbar">
-          <form className="map-search-form" onSubmit={handleSubmit}>
+          <form className="map-search-form" onSubmit={handleSearchSubmit}>
             <input
+              className="map-search-input"
               type="text"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               placeholder="Search address, university, city, or zip code..."
-              className="map-search-input"
             />
 
-            <button type="submit" className="map-search-button">
+            <button className="map-search-button" type="submit">
               Search
             </button>
           </form>
@@ -127,7 +123,11 @@ export default function MapView() {
 
         <section className="map-content">
           <aside className="map-list-panel">
-            <h2>{filteredListings.length} Listings Near {query || 'Selected Location'}</h2>
+            <h2>
+              {locationQuery
+                ? `${filteredListings.length} Listings Near ${locationQuery}`
+                : 'Search for a location to view listings'}
+            </h2>
 
             <div className="map-listings">
               {filteredListings.map((listing) => (
@@ -150,12 +150,16 @@ export default function MapView() {
           </aside>
 
           <section className="mock-map-area">
-            <div className="radius-circle"></div>
+            {locationQuery && <div className="radius-circle"></div>}
 
-            <div className="center-marker">
-              <span>📍</span>
-              <p>{query || 'Center Location'}</p>
-            </div>
+            {locationQuery && (
+              <div className="center-marker">
+                <span>📍</span>
+                <p>{locationQuery} Center</p>
+              </div>
+            )}
+
+            <div className="map-label">Interactive Map Area</div>
 
             {filteredListings.map((listing, index) => {
               const position = markerPositions[index % markerPositions.length];
@@ -172,7 +176,7 @@ export default function MapView() {
               );
             })}
 
-            {showTransit && (
+            {showTransit && locationQuery && (
               <>
                 <div className="transit-route route-one"></div>
                 <div className="transit-route route-two"></div>
@@ -190,10 +194,6 @@ export default function MapView() {
                 ))}
               </>
             )}
-
-            <div className="map-label">
-              Interactive Map Area
-            </div>
           </section>
         </section>
       </main>
