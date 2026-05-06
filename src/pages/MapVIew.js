@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import listings from '../data/mockListings';
 import './MapView.css';
 
+//Fix file name
 const markerPositions = [
   { top: '30%', left: '38%' },
   { top: '28%', left: '62%' },
