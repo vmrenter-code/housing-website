@@ -5,6 +5,7 @@ import SearchResults from './pages/SearchResults/SearchResults';
 import MapView from './pages/MapView/MapView';
 import './App.css'; 
 import SignUp from './pages/SignUp/SignUp';
+import Notifications from './pages/Notifications/Notifications'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route path="/search" element={<SearchResults />} />
       <Route path="/map" element={<MapView />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path = "/notifications" element={<Notifications />} />
     </Routes>
   );
 }

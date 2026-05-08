@@ -11,33 +11,36 @@ import './LandingPage.css';
 export default function Landing() {
   const navigate = useNavigate();
 
-    const handleSearch = (query) => {
+  const handleSearch = (query) => {
     navigate(`/search?query=${encodeURIComponent(query)}`);
-    };
+  };
 
-    const handleUniversityClick = (name) => {
+  const handleUniversityClick = (name) => {
     navigate(`/search?query=${encodeURIComponent(name)}`);
-    };
+  };
 
-    return (
-        <div className = "landing"> 
-            <Navbar />
+  const featureActions = {
+    'Smart Alerts': () => navigate('/notifications'),
+  };
 
-            {/* Hero */}
-            <section className ="landing-hero">
-                <div className ="landing-hero-content">
-                    
-                    <h1 className = "landing-hero-title" >
-                        Find Housing Near Your University
-                    </h1>
-                    <p className="landing-hero-sub">
-                        Verified listings near top universities across the US
-                    </p>
-                    <SearchBar onSearch={handleSearch} />
-                </div>
-            </section>   
+  return (
+    <div className="landing">
+      <Navbar />
 
-    {/* Body */}
+      {/* Hero */}
+      <section className="landing-hero">
+        <div className="landing-hero-content">
+          <h1 className="landing-hero-title">
+            Find Housing Near Your University
+          </h1>
+          <p className="landing-hero-sub">
+            Verified listings near top universities across the US
+          </p>
+          <SearchBar onSearch={handleSearch} />
+        </div>
+      </section>
+
+      {/* Body */}
       <main className="landing-main">
         {/* Popular Universities */}
         <section className="landing-section">
@@ -52,7 +55,7 @@ export default function Landing() {
             ))}
           </div>
         </section>
- 
+
         {/* Why UniHousing */}
         <section className="landing-section">
           <h2 className="landing-section-title">Why UniHousing?</h2>
@@ -63,15 +66,14 @@ export default function Landing() {
                 icon={f.icon}
                 title={f.title}
                 desc={f.desc}
+                onClick={featureActions[f.title] || undefined}
               />
             ))}
           </div>
         </section>
       </main>
- 
+
       <Footer />
     </div>
-
-
-    );
+  );
 }

@@ -9,6 +9,13 @@
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
+/* Extra highlight when the card is interactive */
+.feature-card--clickable:hover {
+  border-color: var(--brand);
+  box-shadow: 0 6px 20px rgba(34, 85, 204, 0.18);
+}
+
+
 .feature-card:hover {
   box-shadow: 0 6px 20px rgba(34, 85, 204, 0.1);
   transform: translateY(-3px);
