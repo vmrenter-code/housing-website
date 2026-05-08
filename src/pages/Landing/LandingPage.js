@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar.js';
-import Footer from '../components/Footer.js';
-import SearchBar from '../components/Searchbar.js';
-import UniversityChip from '../components/Universitychip.js';
-import FeatureCard from '../components/Featurecard.js';
-import { universities, features } from '../data/landingData.js';
+import Navbar from '../../components/Navbar.js';
+import Footer from '../../components/Footer.js';
+import SearchBar from '../../components/Searchbar.js';
+import UniversityChip from '../../components/Universitychip.js';
+import FeatureCard from '../../components/Featurecard.js';
+import { universities, features } from '../../data/landingData.js';
 import './LandingPage.css';
 
 export default function Landing() {

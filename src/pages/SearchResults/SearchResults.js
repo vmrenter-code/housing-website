@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Navbar from '../components/Navbar.js';
-import Footer from '../components/Footer.js';
-import FilterBar from '../components/FilterBar.js';
-import './LandingPage.css';
+import Navbar from '../../components/Navbar.js';
+import Footer from '../../components/Footer.js';
+import FilterBar from '../../components/FilterBar.js';
+import '../Landing/LandingPage.css';
 import './SearchResults.css';
-import listings from '../data/mockListings.js';
+import listings from '../../data/mockListings.js';
 
 export default function SearchResults() {
     const navigate = useNavigate();

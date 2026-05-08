@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import listings from '../data/mockListings';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import listings from '../../data/mockListings';
 import './MapView.css';
 
 //Fix file name

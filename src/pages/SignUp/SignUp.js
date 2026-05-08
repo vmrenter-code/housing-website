@@ -1,8 +1,8 @@
 import React, {useState} from "react";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import FormInput from "../components/FormInput";
-import FormDivider from "../components/FormDivider";
+import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
+import FormInput from "../../components/FormInput";
+import FormDivider from "../../components/FormDivider";
 import './SignUp.css';
 
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import SearchResults from './pages/SearchResults';
-import MapView from './pages/MapView';
+import LandingPage from './pages/Landing/LandingPage';
+import SearchResults from './pages/SearchResults/SearchResults';
+import MapView from './pages/MapView/MapView';
 import './App.css'; 
-import SignUp from './pages/SignUp';
+import SignUp from './pages/SignUp/SignUp';
 
 function App() {
   return (
