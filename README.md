@@ -53,21 +53,28 @@ also update personal preferences, save and share favorite listings, and manage t
 ## Project Structure
 
 ```
-src/
-├── assets/             # Images, icons, global fonts
-├── components/         # Reusable UI elements (Buttons, Inputs, Cards)
-│   ├── common/         # Generic items used everywhere
-│   └── layout/         # Header, Footer, Navbar
-├── hooks/              # Custom React hooks
-├── pages/              # Route-level components (Home, About, ...)
-│   ├── Home/
-│   │   ├── Home.js
-│   │   └── Home.css
-│   └── Listing/
-├── services/           # API calls and data fetching logic
-├── utils/              # Helper functions (form validation, formatting)
-├── App.js              # Routing setup (React Router)
-└── index.js            # Entry point
+housing-website/
+├── front-end/           # React Application
+│   ├── public/
+│   ├── src/
+│   │   ├── components/  # Reusable UI elements
+│   │   ├── data/        # Mock-up data
+│   │   ├── pages/       # Route-level components (Home, Listing, etc.)
+│   │   ├── services/    # API calls and data fetching logic
+│   │   ├── utils/       # Helper functions
+│   │   ├── App.css
+│   │   ├── App.js       # Routing setup
+│   │   ├── index.css
+│   │   └── index.js     # React Entry point
+│   ├── package.json
+│   └── package-lock.json
+└── back-end/            # Express.js API
+    ├── controllers/     # Route logic
+    ├── models/          # Database schemas
+    ├── routes/          # API endpoints
+    ├── index.js         # Server Entry point
+    ├── package.json
+    └── package-lock.json
 ```
 
 ---
@@ -84,32 +91,15 @@ src/
 Clone the repository and install dependencies:
 
 ```bash
+# Clone the repository
 git clone https://github.com/vmrenter-code/housing-website.git
 cd housing-website
+
+# Install Front-end dependencies
+cd front-end
+npm install
+
+# Install Back-end dependencies
+cd back-end
 npm install
 ```
-
----
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm install`
-
-Installs all necessary dependencies.
-
-### `npm start`
-
-Runs the app in development mode.  
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser. The page reloads automatically when you
-make edits.
-
-### `npm test`
-
-Launches the test runner in interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build/` folder. It correctly bundles React in production mode and optimizes the
-build for the best performance.
