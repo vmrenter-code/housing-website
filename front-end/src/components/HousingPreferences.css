@@ -1,0 +1,29 @@
+.btn-toggle-group, .amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+}
+
+.btn-toggle-group button, .chip {
+    padding: 8px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.selected {
+    background-color: #3b66cc !important;
+    color: white;
+}
+
+.save-btn {
+    width: 100%;
+    background: #3b66cc;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}

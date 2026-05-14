@@ -8,6 +8,7 @@ import SignUp from './pages/Authentication/SignUp';
 import Notifications from './pages/Notifications/Notifications'
 import Login from "./pages/Authentication/Login";
 import ListingDetailPage from './pages/ListingDetail/ListingDetailPage';
+import Profile from "./pages/Profile/Profile";
 
 function App() {
     return (
@@ -15,10 +16,11 @@ function App() {
             <Route path="/" element={<LandingPage/>}/>
             <Route path="/search" element={<SearchResults/>}/>
             <Route path="/map" element={<MapView/>}/>
+            <Route path="/profile" element={<Profile/>}/>
             <Route path="/signup" element={<SignUp/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/notifications" element={<Notifications/>}/>
-            <Route path="/listing/:id" element={<ListingDetailPage />} />
+            <Route path="/listing/:id" element={<ListingDetailPage/>}/>
         </Routes>
     );
 }
