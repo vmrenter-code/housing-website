@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import listings from '../../data/mockListings';
@@ -21,17 +22,31 @@ const transitStops = [
 ];
 
 export default function MapView() {
-  const [searchValue, setSearchValue] = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
-  const [priceLimit, setPriceLimit] = useState('any');
-  const [homeType, setHomeType] = useState('any');
-  const [distanceLimit, setDistanceLimit] = useState('any');
-  const [showTransit, setShowTransit] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const restoredState = location.state?.mapState;
+
+  const [searchValue, setSearchValue] = useState(restoredState?.searchValue || '');
+  const [locationQuery, setLocationQuery] = useState(restoredState?.locationQuery || '');
+  const [priceLimit, setPriceLimit] = useState(restoredState?.priceLimit || 'any');
+  const [homeType, setHomeType] = useState(restoredState?.homeType || 'any');
+  const [distanceLimit, setDistanceLimit] = useState(restoredState?.distanceLimit || 'any');
+  const [showTransit, setShowTransit] = useState(restoredState?.showTransit || false);
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     setLocationQuery(searchValue.trim());
   };
+
+  const getCurrentMapState = () => ({
+    searchValue,
+    locationQuery,
+    priceLimit,
+    homeType,
+    distanceLimit,
+    showTransit,
+  });
 
   let filteredListings = [];
 
@@ -132,7 +147,17 @@ export default function MapView() {
 
             <div className="map-listings">
               {filteredListings.map((listing) => (
-                <article key={listing.id} className="map-listing-card">
+                <article
+                key={listing.id}
+                className="map-listing-card"
+                onClick={() =>
+                  navigate(`/listing/${listing.id}`, {
+                    state: {
+                      from: '/map',
+                      mapState: getCurrentMapState(),
+                    },
+                  })
+                }>
                   <div className="map-listing-image">IMG</div>
 
                   <div className="map-listing-body">
@@ -167,13 +192,21 @@ export default function MapView() {
 
               return (
                 <button
-                  key={listing.id}
-                  className="price-marker"
-                  style={{ top: position.top, left: position.left }}
-                  title={listing.title}
-                >
-                  {listing.price.replace('/mo', '')}
-                </button>
+                key={listing.id}
+                className="price-marker"
+                style={{ top: position.top, left: position.left }}
+                title={listing.title}
+                onClick={() =>
+                  navigate(`/listing/${listing.id}`, {
+                    state: {
+                      from: '/map',
+                      mapState: getCurrentMapState(),
+                    },
+                  })
+                }
+              >
+                {listing.price.replace('/mo', '')}
+              </button>
               );
             })}
 

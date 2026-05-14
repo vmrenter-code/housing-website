@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import listings from '../../data/mockListings';
@@ -8,16 +8,24 @@ import './ListingDetailPage.css';
 export default function ListingDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const listing = listings.find((item) => item.id === Number(id));
 
+  const handleBack = () => {
+    navigate(location.state?.from || '/map', {
+        state: {
+        mapState: location.state?.mapState,
+        },
+    });
+};
   if (!listing) {
     return (
       <div>
         <Navbar />
         <main className="listing-detail-main">
           <h2>Listing not found</h2>
-          <button onClick={() => navigate('/map')}>Back to Map</button>
+          <button onClick={() => navigate(-1)}>Back to Map</button>
         </main>
         <Footer />
       </div>
@@ -39,8 +47,8 @@ export default function ListingDetailPage() {
 
         <section className="listing-detail-content">
           <div className="listing-info">
-            <button className="back-button" onClick={() => navigate(-1)}>
-              ← Back
+            <button className="back-button" onClick={handleBack}>
+            ← Back
             </button>
 
             <h1>{listing.title}</h1>
