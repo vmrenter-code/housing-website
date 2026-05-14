@@ -1,0 +1,35 @@
+.profile-page {
+    background-color: #f9f9f9;
+    min-height: 100vh;
+    font-family: sans-serif;
+}
+
+.profile-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}

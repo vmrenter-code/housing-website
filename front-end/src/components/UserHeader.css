@@ -1,0 +1,32 @@
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    background-color: #ddd;
+    border-radius: 50%;
+}
+
+.user-info h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.user-info p {
+    color: #666;
+    margin: 5px 0 15px;
+}
+
+.edit-btn {
+    background-color: #3b66cc;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
