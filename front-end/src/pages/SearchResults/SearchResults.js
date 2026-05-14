@@ -6,6 +6,7 @@ import FilterBar from '../../components/FilterBar.js';
 import '../Landing/LandingPage.css';
 import './SearchResults.css';
 import listings from '../../data/mockListings.js';
+import SaveButton from '../../components/SaveButton';
 
 export default function SearchResults() {
     const navigate = useNavigate();
@@ -130,12 +131,13 @@ export default function SearchResults() {
                                         {listing.bedrooms} • {listing.distance}
                                     </p>
                                     <button
-                                    className="search-result-card-link"
-                                    onClick={() => navigate(`/listing/${listing.id}`)}
+                                      className="search-result-card-link"
+                                      onClick={() => navigate(`/listing/${listing.id}`)}
                                     >
-                                    View Details →
+                                      View Details →
                                     </button>
                                 </div>
+                                <SaveButton listingId={listing.id} variant="icon" />
                             </div>
                         ))}
                     </div>

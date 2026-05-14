@@ -1,0 +1,37 @@
+.save-button {
+  background: transparent;
+  border: 1px solid #2b6cb0;
+  color: #2b6cb0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-button.saved {
+  background: #2b6cb0;
+  color: white;
+}
+
+.save-button:focus {
+  outline: 2px solid rgba(43,108,176,0.25);
+}
+
+.save-button.icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 18px;
+}
+
+.save-button.icon .heart {
+  line-height: 1;
+}
+
+.save-button.icon.saved {
+  background: #2b6cb0;
+  color: white;
+}

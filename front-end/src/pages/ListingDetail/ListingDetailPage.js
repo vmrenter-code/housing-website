@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SaveButton from '../../components/SaveButton';
 import listings from '../../data/mockListings';
 import './ListingDetailPage.css';
 
@@ -11,6 +12,8 @@ export default function ListingDetailPage() {
   const location = useLocation();
 
   const listing = listings.find((item) => item.id === Number(id));
+
+ 
 
   const handleBack = () => {
     navigate(location.state?.from || '/map', {
@@ -85,7 +88,7 @@ export default function ListingDetailPage() {
             <button className="send-button">Send Message</button>
 
             <div className="contact-actions">
-              <button>Save Listing</button>
+              <SaveButton listingId={listing.id} />
               <button>Share</button>
             </div>
           </aside>
