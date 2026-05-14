@@ -129,9 +129,12 @@ export default function SearchResults() {
                                     <p className="search-result-card-meta">
                                         {listing.bedrooms} • {listing.distance}
                                     </p>
-                                    <a href="#" className="search-result-card-link">
-                                        View Details →
-                                    </a>
+                                    <button
+                                    className="search-result-card-link"
+                                    onClick={() => navigate(`/listing/${listing.id}`)}
+                                    >
+                                    View Details →
+                                    </button>
                                 </div>
                             </div>
                         ))}
