@@ -31,7 +31,7 @@ export default function SavedListings() {
   };
 
   return (
-    <div>
+    <div className="saved-page">
       <Navbar />
       <main style={{ padding: 24 }}>
         <h2>Saved Listings</h2>

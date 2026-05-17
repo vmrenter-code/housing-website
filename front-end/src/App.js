@@ -9,6 +9,7 @@ import Notifications from './pages/Notifications/Notifications'
 import Login from "./pages/Authentication/Login";
 import ListingDetailPage from './pages/ListingDetail/ListingDetailPage';
 import SavedListings from './pages/Saved/SavedListings';
+import MessagesPage from './pages/Messages/MessagesPage';
 import Profile from "./pages/Profile/Profile";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/login" element={<Login/>}/>
             <Route path="/notifications" element={<Notifications/>}/>
             <Route path="/saved" element={<SavedListings/>}/>
+            <Route path="/messages" element={<MessagesPage/>}/>
             <Route path="/listing/:id" element={<ListingDetailPage/>}/>
         </Routes>
     );

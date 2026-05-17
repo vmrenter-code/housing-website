@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -22,6 +22,40 @@ export default function ListingDetailPage() {
         },
     });
 };
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [sent, setSent] = useState(false);
+
+    const onSend = () => {
+      if (!message.trim()) {
+        alert('Please enter a message');
+        return;
+      }
+      const msg = {
+        id: Date.now(),
+        listingId: listing.id,
+        listingTitle: listing.title,
+        sender: 'user',
+        name: name || '',
+        email: email || '',
+        content: message,
+        timestamp: new Date().toISOString(),
+      };
+      try {
+        const existing = JSON.parse(localStorage.getItem('messages') || '[]');
+        existing.push(msg);
+        localStorage.setItem('messages', JSON.stringify(existing));
+      } catch (e) {
+        localStorage.setItem('messages', JSON.stringify([msg]));
+      }
+      // clear inputs and show confirmation
+      setMessage('');
+      setName('');
+      setEmail('');
+      setSent(true);
+      setTimeout(() => setSent(false), 2000);
+    };
   if (!listing) {
     return (
       <div>
@@ -81,11 +115,27 @@ export default function ListingDetailPage() {
           <aside className="contact-card">
             <h3>Contact Agent</h3>
 
-            <input type="text" placeholder="Your Name" />
-            <input type="email" placeholder="Email Address" />
-            <textarea placeholder="Message..." />
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <textarea
+              placeholder="Message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
 
-            <button className="send-button">Send Message</button>
+            <button className="send-button" onClick={onSend} disabled={sent}>
+              {sent ? 'Sent ✓' : 'Send Message'}
+            </button>
 
             <div className="contact-actions">
               <SaveButton listingId={listing.id} />

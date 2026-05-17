@@ -14,8 +14,11 @@ export default function Navbar() {
     if (link === 'Map') {
       navigate('/map');
     }
-    if (link === 'Saved' || link === 'Messages') {
+    if (link === 'Saved') {
       navigate('/saved');
+    }
+    if (link === 'Messages') {
+      navigate('/messages');
     }
     if (link === 'Profile')
       navigate('/signup');
