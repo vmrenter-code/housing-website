@@ -31,13 +31,13 @@ export default function ApplicationPage() {
 
       <main className="application-main">
         <section className="application-progress">
-          <div className="progress-step active">✓</div>
-          <div className="progress-line active"></div>
-          <div className="progress-step active">✓</div>
-          <div className="progress-line active"></div>
-          <div className="progress-step current">3</div>
-          <div className="progress-line"></div>
-          <div className="progress-step">4</div>
+        <div className="progress-step active">✓</div>
+        <div className="progress-line active"></div>
+        <div className="progress-step current">2</div>
+        <div className="progress-line"></div>
+        <div className="progress-step">3</div>
+        <div className="progress-line"></div>
+        <div className="progress-step">4</div>
         </section>
 
         <div className="progress-labels">
