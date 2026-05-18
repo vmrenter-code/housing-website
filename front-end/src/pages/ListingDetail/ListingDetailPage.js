@@ -137,6 +137,13 @@ export default function ListingDetailPage() {
               {sent ? 'Sent ✓' : 'Send Message'}
             </button>
 
+            <button
+              className="apply-button"
+              onClick={() => navigate(`/apply/${listing.id}`)}
+            >
+              Apply Now
+            </button>
+
             <div className="contact-actions">
               <SaveButton listingId={listing.id} />
               <button>Share</button>

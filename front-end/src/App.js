@@ -11,6 +11,7 @@ import ListingDetailPage from './pages/ListingDetail/ListingDetailPage';
 import SavedListings from './pages/Saved/SavedListings';
 import MessagesPage from './pages/Messages/MessagesPage';
 import Profile from "./pages/Profile/Profile";
+import ApplicationPage from './pages/Application/ApplicationPage';
 
 function App() {
     return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/saved" element={<SavedListings/>}/>
             <Route path="/messages" element={<MessagesPage/>}/>
             <Route path="/listing/:id" element={<ListingDetailPage/>}/>
+            <Route path="/apply/:id" element={<ApplicationPage />} />
         </Routes>
     );
 }
