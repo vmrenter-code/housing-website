@@ -1,33 +1,29 @@
 const express = require('express');
-const {MongoClient, ServerApiVersion} = require('mongodb');
+const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5001;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(process.env.DB_URI, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
+/* --- Middleware --- */
+// Enable Cross-Origin Resource Sharing
+app.use(cors());
+// Allow the server to accept and parse JSON in request bodies
+app.use(express.json());
+
+/* --- MongoDB Connection using Mongoose --- */
+mongoose.connect(process.env.DB_URI)
+    .then(() => console.log("Successfully connected to MongoDB!"))
+    .catch(err => console.error("Failed to connect to MongoDB:", err));
+
+/* --- API Routes --- */
+app.use('/api/users', require('./routes/users'));
+
+// A simple root route to test if the server is up
+app.get('/', (req, res) => {
+    res.send('API Server is running!');
 });
-
-async function run() {
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ping: 1});
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
-    }
-}
-
-run().catch(console.dir);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
