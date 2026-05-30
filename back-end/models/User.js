@@ -25,18 +25,24 @@ const notificationSettingsSchema = new Schema({
 
 /* --- User Schema --- */
 const userSchema = new Schema({
+    // General information
     fullName: { type: String, required: true, trim: true },
-    // email = primary key
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true }, // email => primary key
     password: { type: String, required: true },
-    university: { type: String, required: true, trim: true },
+    university: { type: String, required: () => { return this.role == 'tenant' }, trim: true },
 
+    // User role
+    role: {
+        type: String,
+        enum: ['tenant', 'landlord', 'agent', 'admin'],
+        default: 'tenant'
+    },
 
     // Fields for SSO integration
     googleId: { type: String },
     ssoId: { type: String },
 
-    // User Preferences
+    // Preferences
     preferences: {
         type: preferencesSchema,
         default: () => ({})
@@ -47,24 +53,6 @@ const userSchema = new Schema({
         type: notificationSettingsSchema,
         default: () => ({})
     },
-
-    // References foreign keys from other tables
-    savedListings: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Listing'
-    }],
-    messages: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Message'
-    }],
-    notifications: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Notification'
-    }],
-    applications: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Application'
-    }],
 
 }, {
     // Add `createdAt` and `updatedAt` timestamps
