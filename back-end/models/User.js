@@ -1,29 +1,76 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+
+
+/* --- User Preferences --- */
+const preferencesSchema = new Schema({
+    budget: { type: Number, default: 1500 },
+    bedrooms: { type: String, default: 'Any' },
+    maxDistance: { type: String, default: '<1 mi' },
+    amenities: { type: [String], default: ['Parking', 'Gym'] },
+    leaseDuration: { type: String, default: '12 mo' }
+}, { _id: false });
+
+
+/* --- Notification Settings --- */
+const notificationSettingsSchema = new Schema({
+    newMatches: { type: Boolean, default: true },
+    priceDrops: { type: Boolean, default: true },
+    newMessages: { type: Boolean, default: true },
+    applicationUpdates: { type: Boolean, default: false },
+    weeklyDigest: { type: Boolean, default: true }
+}, { _id: false });
+
+
+/* --- User Schema --- */
 const userSchema = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true // No two users can have the same email
-    },
-    // The preferences is a nested object
+    fullName: { type: String, required: true, trim: true },
+    // email = primary key
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, required: true },
+    university: { type: String, required: true, trim: true },
+
+
+    // Fields for SSO integration
+    googleId: { type: String },
+    ssoId: { type: String },
+
+    // User Preferences
     preferences: {
-        budget: {type: Number, default: 1500},
-        bedrooms: {type: String, default: '2'},
-        maxDistance: {type: String, default: '<1 mi'},
-        amenities: {type: [String], default: ['Parking', 'Gym']}
-    }
+        type: preferencesSchema,
+        default: () => ({})
+    },
+
+    // Notification Settings
+    notificationSettings: {
+        type: notificationSettingsSchema,
+        default: () => ({})
+    },
+
+    // References foreign keys from other tables
+    savedListings: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Listing'
+    }],
+    messages: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Message'
+    }],
+    notifications: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Notification'
+    }],
+    applications: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Application'
+    }],
+
 }, {
-    // Adds `createdAt` and `updatedAt` fields
+    // Add `createdAt` and `updatedAt` timestamps
     timestamps: true
 });
 
-// Create the model from the schema and export it
-const User = mongoose.model('User', userSchema);
 
+const User = mongoose.model('User', userSchema);
 module.exports = User;
