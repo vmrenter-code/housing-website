@@ -10,5 +10,5 @@ function error(res, code, m) {
 
 module.exports = {
     serverError,
-    userError
+    error
 };
