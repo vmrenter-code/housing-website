@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'TEMP_KEY';
 /* --- POST: Register a new User --- */
 router.post('/register', async (req, res) => {
     try {
-        const { fullName, email, password, university } = req.body;
+        const { fullName, email, password, role, university } = req.body;
 
         // check if user already exists
         const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -23,8 +23,8 @@ router.post('/register', async (req, res) => {
             fullName,
             email,
             password,
-            university,
-            role: 'tenant'
+            role,
+            university
         });
 
         await newUser.save();
@@ -122,6 +122,23 @@ router.patch('/preferences', auth, async (req, res) => {
             return error(res, 404, 'User not found!');
 
         res.json(updatedUser.preferences);
+    } catch (err) {
+        serverError(err, res);
+    }
+});
+
+router.patch('/notification', auth, async (req, res) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: { notificationSettings: req.body } },
+            { new: true, runValidators: true }
+        ).select('notificationSettings');
+
+        if (!updatedUser)
+            return error(res, 404, 'User not found!');
+
+        res.json(updatedUser.notificationSettings);
     } catch (err) {
         serverError(err, res);
     }

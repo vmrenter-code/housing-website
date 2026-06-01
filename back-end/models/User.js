@@ -33,7 +33,7 @@ const userSchema = new Schema({
     role: { type: String, enum: ['tenant', 'landlord', 'agent', 'admin'], default: 'tenant' },
     university: {
         type: String,
-        required: () => { return this.role == 'tenant' },
+        required: function () { return this.role == 'tenant' },
         trim: true
     },
 
