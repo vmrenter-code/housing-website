@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../../utils";
 import Navbar from "../../components/Navbar";
@@ -11,12 +11,34 @@ import "./Profile.css";
 
 
 
+const defaultPreferences = {
+    budget: 1500,
+    bedrooms: 'Any',
+    maxDistance: '<1 mi',
+    amenities: ['Parking', 'Gym'],
+};
+
+const defaultNotificationSettings = {
+    newMatches: true,
+    priceDrops: true,
+    newMessages: true,
+    applicationUpdates: false,
+    weeklyDigest: true,
+};
+
 export default function Profile() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [preferences, setPreferences] = useState(defaultPreferences);
+    const [notificationSettings, setNotificationSettings] = useState(defaultNotificationSettings);
     const [activeTab, setActiveTab] = useState('Preferences');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+    const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+
+    const prefTimeout = useRef(null);
+    const notifTimeout = useRef(null);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -48,6 +70,8 @@ export default function Profile() {
                     school: profile.university || 'no-school',
                     role: profile.role || 'no-role',
                 });
+                setPreferences({ ...defaultPreferences, ...profile.preferences });
+                setNotificationSettings({ ...defaultNotificationSettings, ...profile.notificationSettings });
             })
             .catch((err) => {
                 setError(err.message || 'Unable to load profile');
@@ -55,7 +79,71 @@ export default function Profile() {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, []);
+    }, [navigate]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        if (prefTimeout.current)
+            clearTimeout(prefTimeout.current);
+
+        prefTimeout.current = setTimeout(() => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            setIsSavingPreferences(true);
+            fetch(`${API_BASE}/users/preferences`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(preferences),
+            })
+                .then((res) => res.json())
+                .then(() => {
+                    setIsSavingPreferences(false);
+                })
+                .catch(() => {
+                    setIsSavingPreferences(false);
+                });
+        }, 800);
+
+        return () => {
+            if (prefTimeout.current) clearTimeout(prefTimeout.current);
+        };
+    }, [preferences, user]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        if (notifTimeout.current)
+            clearTimeout(notifTimeout.current);
+
+        notifTimeout.current = setTimeout(() => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            setIsSavingNotifications(true);
+            fetch(`${API_BASE}/users/notification`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(notificationSettings),
+            })
+                .then((res) => res.json())
+                .then(() => {
+                    setIsSavingNotifications(false);
+                })
+                .catch(() => {
+                    setIsSavingNotifications(false);
+                });
+        }, 800);
+
+        return () => {
+            if (notifTimeout.current) clearTimeout(notifTimeout.current);
+        };
+    }, [notificationSettings, user]);
 
     if (isLoading) {
         return (
@@ -94,10 +182,22 @@ export default function Profile() {
                 </div>
                 <ProfileTabs activeTab={activeTab} onTabClick={setActiveTab} />
                 {activeTab === 'Preferences' && (
-                    <div className="settings-grid">
-                        <HousingPreferences />
-                        <NotificationSettings />
-                    </div>
+                    <>
+                        <div className="settings-grid">
+                            <HousingPreferences
+                                preferences={preferences}
+                                onChange={setPreferences}
+                            />
+                            <NotificationSettings
+                                notificationSettings={notificationSettings}
+                                onChange={setNotificationSettings}
+                            />
+                        </div>
+                        <div className="status-row">
+                            {isSavingPreferences && <p>Saving preferences...</p>}
+                            {isSavingNotifications && <p>Saving notification settings...</p>}
+                        </div>
+                    </>
                 )}
             </main>
             <Footer />
