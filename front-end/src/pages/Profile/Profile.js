@@ -27,8 +27,7 @@ export default function Profile() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            setError('Please log in to view your profile.');
-            setIsLoading(false);
+            navigate('/login');
             return;
         }
 
