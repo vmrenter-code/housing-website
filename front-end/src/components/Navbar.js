@@ -20,8 +20,14 @@ export default function Navbar() {
     if (link === 'Messages') {
       navigate('/messages');
     }
-    if (link === 'Profile')
-      navigate('/signup');
+    if (link === 'Profile') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        navigate('/profile');
+      } else {
+        navigate('/login');
+      }
+    }
   };
 
   return (
