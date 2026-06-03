@@ -10,10 +10,11 @@ import "./Profile.css";
 
 export default function Profile() {
     // Mock user data
-    const [user] = useState({
+    const [user, setUser] = useState({
         name: 'Amazing Student',
         email: 'anteater@uci.edu',
-        school: 'UC Irvine'
+        school: 'UC Irvine',
+        role: 'tenant' // 'tenant' or 'landlord'
     });
     const [activeTab, setActiveTab] = useState('Preferences');
 
