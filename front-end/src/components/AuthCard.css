@@ -60,6 +60,17 @@
     font-size: 1em;
 }
 
+.btn-primary:disabled {
+    background-color: #a3b2d1;
+    cursor: not-allowed;
+}
+
+.form-error {
+    color: #b91c1c;
+    margin-top: 12px;
+    font-weight: 600;
+}
+
 .form-link {
     margin-top: 20px;
     font-size: 14px;

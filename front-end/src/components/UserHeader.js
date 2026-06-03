@@ -2,13 +2,16 @@ import React from 'react';
 import "./UserHeader.css"
 
 
-export default function UserHeader({user}) {
+
+export default function UserHeader({ user }) {
     const getRoleLabel = (role) => {
-        switch(role) {
-            case 'tenant':
+        switch (role) {
+            case 'student':
                 return 'Student/Tenant';
-            case 'landlord':
+            case 'landlord/agent':
                 return 'Landlord/Agent';
+            case 'admin':
+                return 'Admin';
             default:
                 return '';
         }

@@ -30,10 +30,10 @@ const userSchema = new Schema({
     fullName: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true }, // email => primary key
     password: { type: String, required: true },
-    role: { type: String, enum: ['tenant', 'landlord', 'agent', 'admin'], default: 'tenant' },
+    role: { type: String, enum: ['student', 'landlord/agent', 'admin'], default: 'student' },
     university: {
         type: String,
-        required: function () { return this.role == 'tenant' },
+        required: function () { return this.role == 'student' },
         trim: true
     },
 

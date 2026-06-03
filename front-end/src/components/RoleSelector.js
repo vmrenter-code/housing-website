@@ -1,6 +1,8 @@
 import React from 'react';
 import './RoleSelector.css';
 
+
+
 export default function RoleSelector({ role, onRoleChange, required = false }) {
     return (
         <div className="role-selector-group">
@@ -13,8 +15,8 @@ export default function RoleSelector({ role, onRoleChange, required = false }) {
                 className="role-select"
             >
                 <option value="">Select a role</option>
-                <option value="tenant">Student/Tenant</option>
-                <option value="landlord">Landlord/Agent</option>
+                <option value="student">Student/Tenant</option>
+                <option value="landlord/agent">Landlord/Agent</option>
             </select>
         </div>
     );
