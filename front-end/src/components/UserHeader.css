@@ -17,9 +17,28 @@
     font-size: 1.5rem;
 }
 
-.user-info p {
+.user-meta {
     color: #666;
     margin: 5px 0 15px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.user-meta span {
+    display: inline;
+}
+
+.user-role {
+    font-weight: 600;
+    color: #3b66cc;
+    background-color: #f0f4ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .edit-btn {
