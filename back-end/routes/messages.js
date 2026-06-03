@@ -52,6 +52,28 @@ router.get('/conversation/:userId', async (req, res) => {
     }
 });
 
+router.patch('/:id/read', async (req, res) => {
+    try {
+        const message = await Message.findByIdAndUpdate(
+            req.params.id,
+            { isRead: true },
+            { new: true }
+        );
+
+        if (!message) {
+            return res.status(404).json({
+                error: 'Message not found'
+            });
+        }
+
+        res.json(message);
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     try {
         const message = await Message.findByIdAndDelete(req.params.id);
