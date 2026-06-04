@@ -21,6 +21,7 @@ mongoose.connect(process.env.DB_URI)
 app.use('/api/users', require('./routes/users'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/listings', require('./routes/listings'));
+app.use('/api/applications', require('./routes/applications'));
 
 // A simple root route to test if the server is up
 app.get('/', (req, res) => {
