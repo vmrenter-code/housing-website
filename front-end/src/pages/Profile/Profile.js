@@ -36,6 +36,9 @@ export default function Profile() {
     const [error, setError] = useState("");
     const [isSavingPreferences, setIsSavingPreferences] = useState(false);
     const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+    const [isSavingAccount, setIsSavingAccount] = useState(false);
+    const [accountMessage, setAccountMessage] = useState('');
+    const [accountError, setAccountError] = useState('');
 
     const prefTimeout = useRef(null);
     const notifTimeout = useRef(null);
@@ -44,6 +47,70 @@ export default function Profile() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/login');
+    };
+
+    const handleTabClick = (tab) => {
+        if (tab === 'Notifications') {
+            navigate('/notifications');
+            return;
+        }
+
+        if (tab === 'Saved Listings') {
+            navigate('/saved');
+            return;
+        }
+
+        setActiveTab(tab);
+    };
+
+    const handleAccountSubmit = async (event) => {
+        event.preventDefault();
+        if (!user) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        setIsSavingAccount(true);
+        setAccountMessage('');
+        setAccountError('');
+
+        const updatePayload = {
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+        };
+
+        if (user.role === 'student') {
+            updatePayload.university = user.university;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/users/me`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updatePayload),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Unable to update account information');
+            }
+
+            setUser((prev) => ({
+                ...prev,
+                fullName: data.fullName || prev.fullName,
+                email: data.email || prev.email,
+                role: data.role || prev.role,
+                university: data.university || (data.role === 'student' ? prev.university : ''),
+            }));
+            setAccountMessage('Account information updated successfully');
+        } catch (err) {
+            setAccountError(err.message || 'Unable to update account information');
+        } finally {
+            setIsSavingAccount(false);
+        }
     };
 
     useEffect(() => {
@@ -65,10 +132,10 @@ export default function Profile() {
             })
             .then((profile) => {
                 setUser({
-                    name: profile.fullName || profile.name || 'No Name',
-                    email: profile.email || 'no-email@example.com',
-                    school: profile.university || 'no-school',
-                    role: profile.role || 'no-role',
+                    fullName: profile.fullName || '',
+                    email: profile.email || '',
+                    role: profile.role || 'student',
+                    university: profile.university || '',
                 });
                 setPreferences({ ...defaultPreferences, ...profile.preferences });
                 setNotificationSettings({ ...defaultNotificationSettings, ...profile.notificationSettings });
@@ -177,10 +244,78 @@ export default function Profile() {
             <Navbar />
             <main className="profile-content">
                 <div className="profile-header-row">
-                    <UserHeader user={user} />
+                    <UserHeader
+                        user={{
+                            name: user?.fullName || 'No Name',
+                            email: user?.email || 'no-email@example.com',
+                            school: user?.role === 'student' ? user?.university || 'no-school' : '',
+                            role: user?.role || 'no-role',
+                        }}
+                    />
                     <button className="logout-btn" onClick={handleLogout}>Log Out</button>
                 </div>
-                <ProfileTabs activeTab={activeTab} onTabClick={setActiveTab} />
+                <ProfileTabs activeTab={activeTab} onTabClick={handleTabClick} />
+                {activeTab === 'Account' && (
+                    <div className="settings-grid">
+                        <section className="card account-card">
+                            <h2>Account Information</h2>
+                            <form onSubmit={handleAccountSubmit} className="account-form">
+                                <div className="input-group">
+                                    <label htmlFor="fullName">Full Name</label>
+                                    <input
+                                        id="fullName"
+                                        type="text"
+                                        value={user?.fullName || ''}
+                                        onChange={(e) => setUser((prev) => ({ ...prev, fullName: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="email">Email</label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={user?.email || ''}
+                                        onChange={(e) => setUser((prev) => ({ ...prev, email: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="role">Role</label>
+                                    <select
+                                        id="role"
+                                        value={user?.role || 'student'}
+                                        onChange={(e) => setUser((prev) => ({
+                                            ...prev,
+                                            role: e.target.value,
+                                            university: e.target.value === 'student' ? prev?.university || '' : '',
+                                        }))}
+                                    >
+                                        <option value="student">Student</option>
+                                        <option value="landlord/agent">Landlord/Agent</option>
+                                    </select>
+                                </div>
+                                {user?.role === 'student' && (
+                                    <div className="input-group">
+                                        <label htmlFor="university">University</label>
+                                        <input
+                                            id="university"
+                                            type="text"
+                                            value={user?.university || ''}
+                                            onChange={(e) => setUser((prev) => ({ ...prev, university: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                )}
+                                <button type="submit" className="save-btn" disabled={isSavingAccount}>
+                                    {isSavingAccount ? 'Saving...' : 'Save Account'}
+                                </button>
+                                {accountMessage && <p className="form-success">{accountMessage}</p>}
+                                {accountError && <p className="form-error">{accountError}</p>}
+                            </form>
+                        </section>
+                    </div>
+                )}
                 {activeTab === 'Preferences' && (
                     <>
                         <div className="settings-grid">

@@ -110,6 +110,51 @@ router.get('/me', auth, async (req, res) => {
     }
 });
 
+/* --- PATCH: Update a user's account info --- */
+router.patch('/me', auth, async (req, res) => {
+    try {
+        const allowedUpdates = ['fullName', 'email', 'role', 'university'];
+        const updates = {};
+
+        allowedUpdates.forEach((field) => {
+            if (req.body[field] !== undefined)
+                updates[field] = req.body[field];
+        });
+
+        if (updates.email) {
+            const existingUser = await User.findOne({ email: updates.email.toLowerCase() });
+            if (existingUser && existingUser._id.toString() !== req.user.id)
+                return error(res, 400, 'A user with that email already exists');
+
+            updates.email = updates.email.toLowerCase();
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: updates },
+            { new: true, runValidators: true, context: 'query' }
+        ).select('-password -googleId -ssoId');
+
+        if (!updatedUser)
+            return error(res, 404, 'User not found!');
+
+        res.json({
+            fullName: updatedUser.fullName,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            university: updatedUser.university,
+        });
+    } catch (err) {
+        if (err.code === 11000)
+            return error(res, 400, 'A user with that email already exists');
+
+        if (err.name === 'ValidationError')
+            return error(res, 400, err.message);
+
+        serverError(err, res);
+    }
+});
+
 router.patch('/preferences', auth, async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(
