@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 import FormInput from "../../components/FormInput";
 import FormDivider from "../../components/FormDivider";
 import AuthCard from "../../components/AuthCard";
+import ErrorDialog from "../../components/ErrorDialog";
 import RoleSelector from "../../components/RoleSelector";
 import ConditionalField from "../../components/ConditionalField";
 
@@ -119,13 +120,13 @@ export default function SignUp() {
                                     onChange={handleChange} />
                             </ConditionalField>
 
-                            {error && <p className="form-error">{error}</p>}
                             <button type="submit" className="btn-primary" disabled={isSubmitting}>
                                 {isSubmitting ? "Creating account..." : "Create Account"}
                             </button>
                         </>
                     </ConditionalField>
                 </form>
+                <ErrorDialog visible={!!error} message={error} onClose={() => setError("")} />
 
                 <ConditionalField role={formData.role} showFor={["student", "landlord/agent"]}>
                     <p className="form-link">

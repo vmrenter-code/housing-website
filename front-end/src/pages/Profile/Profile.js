@@ -7,6 +7,7 @@ import UserHeader from "../../components/UserHeader";
 import ProfileTabs from "../../components/ProfileTabs";
 import HousingPreferences from "../../components/HousingPreferences";
 import NotificationSettings from "../../components/NotificationSettings";
+import ErrorDialog from "../../components/ErrorDialog";
 import "./Profile.css";
 
 
@@ -229,12 +230,12 @@ export default function Profile() {
             <div className="profile-page">
                 <Navbar />
                 <main className="profile-content">
-                    <p className="form-error">{error}</p>
                     <button className="logout-btn" onClick={handleLogout}>
                         {localStorage.getItem('token') ? 'Log Out' : 'Go to Login'}
                     </button>
                 </main>
                 <Footer />
+                <ErrorDialog visible={!!error} message={error} onClose={() => setError("")} />
             </div>
         );
     }
@@ -311,8 +312,8 @@ export default function Profile() {
                                     {isSavingAccount ? 'Saving...' : 'Save Account'}
                                 </button>
                                 {accountMessage && <p className="form-success">{accountMessage}</p>}
-                                {accountError && <p className="form-error">{accountError}</p>}
                             </form>
+                            <ErrorDialog visible={!!accountError} title="Update Error" message={accountError} onClose={() => setAccountError("")} />
                         </section>
                     </div>
                 )}

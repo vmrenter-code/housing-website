@@ -1,0 +1,79 @@
+.error-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.error-dialog-box {
+    width: min(460px, 100%);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.error-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.error-dialog-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: #111827;
+}
+
+.error-dialog-close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.error-dialog-content {
+    padding: 24px;
+    color: #111827;
+    background: #fafafa;
+}
+
+.error-dialog-content p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.error-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px 24px;
+    background: #ffffff;
+}
+
+.error-dialog-actions .btn-primary {
+    min-width: 100px;
+}
+
+@media (max-width: 560px) {
+    .error-dialog-box {
+        width: 100%;
+    }
+
+    .error-dialog-content {
+        padding: 18px;
+    }
+
+    .error-dialog-actions {
+        padding: 16px 18px 18px;
+    }
+}

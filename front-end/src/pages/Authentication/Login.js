@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 import FormInput from "../../components/FormInput";
 import FormDivider from "../../components/FormDivider";
 import AuthCard from "../../components/AuthCard";
+import ErrorDialog from "../../components/ErrorDialog";
 import RoleSelector from "../../components/RoleSelector";
 import ConditionalField from "../../components/ConditionalField";
 
@@ -87,7 +88,6 @@ export default function Login() {
                                 onChange={handleChange} />
                             <FormInput label="Password" type="password" name="password" value={formData.password}
                                 onChange={handleChange} />
-                            {error && <p className="form-error">{error}</p>}
                             <button type="submit" className="btn-primary" disabled={isSubmitting}>
                                 {isSubmitting ? "Logging in..." : "Log In"}
                             </button>
@@ -98,6 +98,7 @@ export default function Login() {
                         </>
                     </ConditionalField>
                 </form>
+                <ErrorDialog visible={!!error} message={error} onClose={() => setError("")} />
             </AuthCard>
             <Footer />
         </div>
