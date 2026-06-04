@@ -27,7 +27,6 @@ export default function UserHeader({ user }) {
                     {user.school && <span> | {user.school}</span>}
                     {user.role && <span className="user-role"> | {getRoleLabel(user.role)}</span>}
                 </div>
-                <button className="edit-btn">Edit Profile</button>
             </div>
         </section>
     );

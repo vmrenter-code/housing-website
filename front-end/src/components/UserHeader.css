@@ -41,15 +41,6 @@
     letter-spacing: 0.5px;
 }
 
-.edit-btn {
-    background-color: #3b66cc;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
 @media (max-width: 640px) {
     .user-header {
         flex-direction: column;
@@ -60,9 +51,5 @@
     .avatar-placeholder {
         width: 80px;
         height: 80px;
-    }
-
-    .edit-btn {
-        width: 100%;
     }
 }
