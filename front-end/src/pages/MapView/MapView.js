@@ -24,6 +24,47 @@ function RecenterMap({ center }) {
     return null;
 }
 
+async function geocodeAddress(address) {
+    if (!address || !address.trim()) return null;
+
+    try {
+        const query = encodeURIComponent(address.trim());
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`);
+        if (!response.ok) return null;
+
+        const results = await response.json();
+        if (!Array.isArray(results) || !results.length) return null;
+
+        const latitude = Number(results[0].lat);
+        const longitude = Number(results[0].lon);
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+        return { latitude, longitude };
+    } catch (err) {
+        return null;
+    }
+}
+
+async function enrichListingsWithCoordinates(inputListings) {
+    const enriched = await Promise.all(inputListings.map(async (listing) => {
+        if (listing.latitude != null && listing.longitude != null) {
+            return listing;
+        }
+
+        const coords = await geocodeAddress(listing.address);
+        if (!coords) return listing;
+
+        return {
+            ...listing,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+        };
+    }));
+
+    return enriched;
+}
+
 export default function MapView() {
     const location = useLocation();
 
@@ -64,8 +105,9 @@ export default function MapView() {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
-            .then(data => {
-                setListings(data);
+            .then(async (data) => {
+                const withCoordinates = await enrichListingsWithCoordinates(data);
+                setListings(withCoordinates);
                 setLoading(false);
             })
             .catch(() => {

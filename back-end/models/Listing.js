@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const listingSchema = new Schema(
 {
     title: {type: String, required: true, trim: true},
+    description: {type: String, default: '', trim: true},
     address: {type: String, required: true, trim: true},
     university: {type: String, required: true, trim: true},
     price: {type: Number, required: true, min: 0},

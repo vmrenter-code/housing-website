@@ -2,7 +2,7 @@ import React from 'react';
 import "./ProfileTabs.css"
 
 export default function ProfileTabs({activeTab, onTabClick}) {
-    const tabs = ['Account', 'Preferences', 'Notifications', 'Saved Listings'];
+    const tabs = ['Account', 'Preferences', 'My Listings', 'Notifications', 'Saved Listings'];
 
     const handleKeyDown = (event, index) => {
         if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;

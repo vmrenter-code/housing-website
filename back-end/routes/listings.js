@@ -6,6 +6,42 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+function hasValidCoordinates(latitude, longitude) {
+    return Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
+}
+
+async function geocodeAddress(address) {
+    if (!address || !address.trim()) return null;
+
+    try {
+        const query = encodeURIComponent(address.trim());
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`, {
+            headers: {
+                'User-Agent': 'UniHousing/1.0 (listing-geocoder)',
+                'Accept-Language': 'en'
+            }
+        });
+
+        if (!response.ok) return null;
+
+        const results = await response.json();
+        if (!Array.isArray(results) || !results.length) return null;
+
+        const latitude = Number(results[0].lat);
+        const longitude = Number(results[0].lon);
+
+        if (!hasValidCoordinates(latitude, longitude)) return null;
+
+        return { latitude, longitude };
+    } catch (err) {
+        return null;
+    }
+}
+
+function canManageListings(user) {
+    return user && (user.role === 'landlord/agent' || user.role === 'admin');
+}
+
 function parseDistancePreference(pref) {
     if (!pref || pref === 'Any') return Number.MAX_SAFE_INTEGER;
     if (pref.includes('<1')) return 1;
@@ -98,6 +134,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+/* GET current user's listings */
+router.get('/mine/all', auth, async (req, res) => {
+    try {
+        if (!canManageListings(req.user)) {
+            return res.status(403).json({ message: 'Only landlords/agents can manage listings' });
+        }
+
+        const filter = req.user.role === 'admin' ? {} : { landlord: req.user.id };
+        const listings = await Listing.find(filter)
+            .populate('landlord', 'fullName email role')
+            .sort({ createdAt: -1 });
+
+        res.json(listings);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch your listings', error: err.message });
+    }
+});
+
 /* GET one listing by id */
 router.get('/:id', async (req, res) => {
     try {
@@ -117,10 +171,24 @@ router.get('/:id', async (req, res) => {
 /* CREATE listing */
 router.post('/', auth, async (req, res) => {
     try {
-        const listing = new Listing({
+        if (!canManageListings(req.user)) {
+            return res.status(403).json({ message: 'Only landlords/agents can create listings' });
+        }
+
+        const listingPayload = {
             ...req.body,
             landlord: req.user.id
-        });
+        };
+
+        if (!hasValidCoordinates(listingPayload.latitude, listingPayload.longitude)) {
+            const coords = await geocodeAddress(listingPayload.address);
+            if (coords) {
+                listingPayload.latitude = coords.latitude;
+                listingPayload.longitude = coords.longitude;
+            }
+        }
+
+        const listing = new Listing(listingPayload);
 
         const savedListing = await listing.save();
         await createMatchNotifications(savedListing);
@@ -134,6 +202,10 @@ router.post('/', auth, async (req, res) => {
 /* UPDATE listing */
 router.patch('/:id', auth, async (req, res) => {
     try {
+        if (!canManageListings(req.user)) {
+            return res.status(403).json({ message: 'Only landlords/agents can update listings' });
+        }
+
         const listing = await Listing.findById(req.params.id);
 
         if (!listing) {
@@ -144,9 +216,22 @@ router.patch('/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this listing' });
         }
 
+        const updates = { ...req.body };
+        const nextAddress = updates.address !== undefined ? updates.address : listing.address;
+        const nextLatitude = updates.latitude !== undefined ? updates.latitude : listing.latitude;
+        const nextLongitude = updates.longitude !== undefined ? updates.longitude : listing.longitude;
+
+        if (!hasValidCoordinates(nextLatitude, nextLongitude)) {
+            const coords = await geocodeAddress(nextAddress);
+            if (coords) {
+                updates.latitude = coords.latitude;
+                updates.longitude = coords.longitude;
+            }
+        }
+
         const updatedListing = await Listing.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updates,
             { new: true, runValidators: true }
         );
 
