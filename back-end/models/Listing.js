@@ -16,7 +16,9 @@ const listingSchema = new Schema(
     amenities: { type: [String], default: []},
     imageUrl: {type: String, default: ''},
     landlord: {type: Schema.Types.ObjectId, ref: 'User', required: true},
-    isAvailable: {type: Boolean, default: true}
+    isAvailable: {type: Boolean, default: true},
+    latitude:  { type: Number, default: null },
+    longitude: { type: Number, default: null }
 },{timestamps: true
 });
 

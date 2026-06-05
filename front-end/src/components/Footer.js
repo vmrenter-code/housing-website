@@ -8,10 +8,10 @@ export default function Footer()
     return (
         <footer className = "footer">
             <span> 2026 UniHousing </span>
-            {FOOTER_LINKS.map((link) => ( 
-                <a key = {link} href = "#" className="footer-link">
+            {FOOTER_LINKS.map((link) => (
+                <button key={link} className="footer-link">
                     {link}
-                </a>    
+                </button>
         ))}
         </footer>
     )

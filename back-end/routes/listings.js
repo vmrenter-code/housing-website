@@ -55,10 +55,40 @@ async function createMatchNotifications(listing) {
     await Notification.insertMany(notifications);
 }
 
-/* GET all listings */
+/* GET all listings (supports query params: q, minPrice, maxPrice, bedrooms, housingType, university) */
 router.get('/', async (req, res) => {
     try {
-        const listings = await Listing.find()
+        const { q, minPrice, maxPrice, bedrooms, housingType, university } = req.query;
+        const filter = {};
+
+        if (q) {
+            const regex = new RegExp(q.trim(), 'i');
+            filter.$or = [
+                { title: regex },
+                { address: regex },
+                { university: regex }
+            ];
+        }
+
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            filter.price = {};
+            if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
+            if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
+        }
+
+        if (bedrooms !== undefined) {
+            filter.bedrooms = Number(bedrooms);
+        }
+
+        if (housingType) {
+            filter.housingType = housingType;
+        }
+
+        if (university) {
+            filter.university = new RegExp(university.trim(), 'i');
+        }
+
+        const listings = await Listing.find(filter)
             .populate('landlord', 'fullName email role')
             .sort({ createdAt: -1 });
 

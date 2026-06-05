@@ -46,23 +46,19 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-left">
           <span className="navbar-logo" onClick={() => navigate('/')}>UniHousing</span>
-          <a href="#" className="navbar-home" onClick={handleHomeClick}>Home</a>
+          <button className="navbar-home" onClick={handleHomeClick}>Home</button>
         </div>
 
         <div className="navbar-right">
           <div className="navbar-links">
             {NAV_LINKS.map((link) => (
-              <a
+              <button
                 key={link}
-                href="#"
                 className="navbar-link"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick(link);
-                }}
+                onClick={() => handleLinkClick(link)}
               >
                 {link}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -80,17 +76,16 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="navbar-dropdown">
           {NAV_LINKS.map((link) => (
-            <a
+            <button
               key={link}
-              href="#"
               className="navbar-link dropdown-link"
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 handleLinkClick(link);
+                setIsMenuOpen(false);
               }}
             >
               {link}
-            </a>
+            </button>
           ))}
         </div>
       )}

@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar.js';
 import Footer from '../../components/Footer.js';
 import FilterBar from '../../components/FilterBar.js';
+import SaveButton from '../../components/SaveButton';
+import { API_BASE } from '../../utils.js';
 import '../Landing/LandingPage.css';
 import './SearchResults.css';
-import listings from '../../data/mockListings.js';
-import SaveButton from '../../components/SaveButton';
 
 export default function SearchResults() {
     const navigate = useNavigate();
@@ -17,76 +17,63 @@ export default function SearchResults() {
     const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
     const [selectedBedrooms, setSelectedBedrooms] = useState([]);
     const [selectedHomeTypes, setSelectedHomeTypes] = useState([]);
-    const normalizedQuery = query.trim().toLowerCase();
+
+    const [listings, setListings] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [fetchError, setFetchError] = useState(null);
+
+    const mainRef = useRef(null);
+    useEffect(() => { mainRef.current?.focus(); }, []);
 
     useEffect(() => {
         setSearchValue(query);
     }, [query]);
+
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (query) params.set('q', query);
+        if (priceRange.min > 0) params.set('minPrice', priceRange.min);
+        if (priceRange.max < 2000) params.set('maxPrice', priceRange.max);
+        selectedBedrooms.forEach(b => params.append('bedrooms', b));
+        selectedHomeTypes.forEach(t => params.append('housingType', t.toLowerCase()));
+
+        setLoading(true);
+        setFetchError(null);
+
+        const token = localStorage.getItem('token');
+        fetch(`${API_BASE}/listings?${params.toString()}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                setListings(data);
+                setLoading(false);
+            })
+            .catch(() => {
+                setFetchError('Failed to load listings. Please try again.');
+                setLoading(false);
+            });
+    }, [query, priceRange, selectedBedrooms, selectedHomeTypes]);
 
     const handleSearchSubmit = (event) => {
         event.preventDefault();
         navigate(`/search?query=${encodeURIComponent(searchValue.trim())}`);
     };
 
-    const handleSortChange = (newSortBy) => {
-        setSortBy(newSortBy);
-    };
-
-    const handlePriceChange = (newPriceRange) => {
-        setPriceRange(newPriceRange);
-    };
-
-    const handleBedroomsChange = (newBedrooms) => {
-        setSelectedBedrooms(newBedrooms);
-    };
-
-    const handleHomeTypeChange = (newHomeTypes) => {
-        setSelectedHomeTypes(newHomeTypes);
-    };
-
-    let filteredListings = listings.filter((listing) => {
-        if (!normalizedQuery) {
-            return true;
-        }
-
-        return listing.university.toLowerCase().includes(normalizedQuery);
-    });
-
-    // Apply price filter
-    filteredListings = filteredListings.filter(
-        (listing) => listing.priceValue >= priceRange.min && listing.priceValue <= priceRange.max
-    );
-
-    // Apply bedrooms filter
-    if (selectedBedrooms.length > 0) {
-        filteredListings = filteredListings.filter((listing) =>
-            selectedBedrooms.includes(listing.bedroomValue)
-        );
-    }
-
-    // Apply home type filter
-    if (selectedHomeTypes.length > 0) {
-        filteredListings = filteredListings.filter((listing) =>
-            selectedHomeTypes.includes(listing.homeType)
-        );
-    }
-
-    // Apply sorting
-    if (sortBy === 'price-low-high') {
-        filteredListings = [...filteredListings].sort((a, b) => a.priceValue - b.priceValue);
-    } else if (sortBy === 'price-high-low') {
-        filteredListings = [...filteredListings].sort((a, b) => b.priceValue - a.priceValue);
-    } else if (sortBy === 'distance-close-far') {
-        filteredListings = [...filteredListings].sort((a, b) => a.distanceValue - b.distanceValue);
-    } else if (sortBy === 'distance-far-close') {
-        filteredListings = [...filteredListings].sort((a, b) => b.distanceValue - a.distanceValue);
-    }
+    let displayListings = [...listings];
+    if (sortBy === 'price-low-high') displayListings.sort((a, b) => a.price - b.price);
+    else if (sortBy === 'price-high-low') displayListings.sort((a, b) => b.price - a.price);
+    else if (sortBy === 'distance-close-far') displayListings.sort((a, b) => a.distanceToCampus - b.distanceToCampus);
+    else if (sortBy === 'distance-far-close') displayListings.sort((a, b) => b.distanceToCampus - a.distanceToCampus);
 
     return (
         <div className="landing">
             <Navbar />
-            
-            <main className="landing-main">
+
+            <main className="landing-main" ref={mainRef} tabIndex={-1} id="main-content">
                 <section className="landing-section search-results-section">
                     <form className="search-results-searchbar" onSubmit={handleSearchSubmit}>
                         <input
@@ -95,6 +82,7 @@ export default function SearchResults() {
                             value={searchValue}
                             onChange={(event) => setSearchValue(event.target.value)}
                             placeholder="Search by university, city, or zip code..."
+                            aria-label="Search listings by university, city, or zip code"
                         />
                         <button className="search-results-searchbar-btn" type="submit">
                             Search
@@ -102,10 +90,10 @@ export default function SearchResults() {
                     </form>
 
                     <FilterBar
-                        onSortChange={handleSortChange}
-                        onPriceChange={handlePriceChange}
-                        onBedroomsChange={handleBedroomsChange}
-                        onHomeTypeChange={handleHomeTypeChange}
+                        onSortChange={setSortBy}
+                        onPriceChange={setPriceRange}
+                        onBedroomsChange={setSelectedBedrooms}
+                        onHomeTypeChange={setSelectedHomeTypes}
                         priceRange={priceRange}
                         selectedBedrooms={selectedBedrooms}
                         selectedHomeTypes={selectedHomeTypes}
@@ -115,35 +103,48 @@ export default function SearchResults() {
                         <h2 className="landing-section-title search-results-summary-title">
                             Results near {query || 'your school'}
                         </h2>
-                        <p className="search-results-summary-count">
-                            {filteredListings.length} listings found
+                        <p className="search-results-summary-count" aria-live="polite">
+                            {loading ? 'Loading...' : `${displayListings.length} listings found`}
                         </p>
                     </div>
 
+                    {fetchError && (
+                        <p role="alert" className="search-error-message">{fetchError}</p>
+                    )}
+
                     <div className="search-results-grid">
-                        {filteredListings.map((listing) => (
-                            <div key={listing.id} className="search-result-card">
-                                <div className="search-result-card-image">Image</div>
+                        {displayListings.map((listing) => (
+                            <div key={listing._id} className="search-result-card">
+                                {listing.imageUrl ? (
+                                    <img
+                                        src={listing.imageUrl}
+                                        alt={listing.title}
+                                        className="search-result-card-image"
+                                    />
+                                ) : (
+                                    <div className="search-result-card-image" aria-hidden="true">No Image</div>
+                                )}
                                 <div className="search-result-card-content">
                                     <h3 className="search-result-card-title">{listing.title}</h3>
-                                    <p className="search-result-card-price">{listing.price}</p>
+                                    <p className="search-result-card-price">${listing.price}/mo</p>
                                     <p className="search-result-card-meta">
-                                        {listing.bedrooms} • {listing.distance}
+                                        {listing.bedrooms} bed • {listing.distanceToCampus} mi from campus
                                     </p>
                                     <button
-                                      className="search-result-card-link"
-                                      onClick={() => navigate(`/listing/${listing.id}`)}
+                                        className="search-result-card-link"
+                                        onClick={() => navigate(`/listing/${listing._id}`)}
+                                        aria-label={`View details for ${listing.title}`}
                                     >
-                                      View Details →
+                                        View Details →
                                     </button>
                                 </div>
-                                <SaveButton listingId={listing.id} variant="icon" />
+                                <SaveButton listingId={listing._id} variant="icon" />
                             </div>
                         ))}
                     </div>
                 </section>
             </main>
-            
+
             <Footer />
         </div>
     );

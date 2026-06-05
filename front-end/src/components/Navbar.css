@@ -27,6 +27,10 @@
 }
 
 .navbar-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   color: #c8d0dc;
   text-decoration: none;
   font-family: 'Arial', sans-serif;
@@ -89,6 +93,10 @@
 
 .navbar-home {
   display: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   color: #c8d0dc;
   text-decoration: none;
   font-family: 'Arial', sans-serif;
