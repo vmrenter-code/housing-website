@@ -91,9 +91,9 @@ export default function SignUp() {
 
                 <ConditionalField role={formData.role} showFor={["student", "landlord/agent"]}>
                     <div className="auth-buttons">
-                        <button className="btn-secondary">Continue with Google</button>
+                        <button type="button" className="btn-secondary">Continue with Google</button>
                         <ConditionalField role={formData.role} showFor="student">
-                            <button className="btn-secondary">Continue with University SSO</button>
+                            <button type="button" className="btn-secondary">Continue with University SSO</button>
                         </ConditionalField>
                     </div>
 
@@ -106,18 +106,18 @@ export default function SignUp() {
                     <ConditionalField role={formData.role} showFor={["student", "landlord/agent"]}>
                         <>
                             <FormInput label="Full Name" type="text" name="fullName" value={formData.fullName}
-                                onChange={handleChange} />
+                                onChange={handleChange} required={true} />
                             <FormInput label="Email" type="email" name="email" value={formData.email}
-                                onChange={handleChange} />
+                                onChange={handleChange} required={true} />
                             <FormInput label="Password" type="password" name="password" value={formData.password}
-                                onChange={handleChange} />
+                                onChange={handleChange} required={true} />
                             <FormInput label="Confirm Password" type="password" name="confirmPassword"
-                                value={formData.confirmPassword} onChange={handleChange} />
+                                value={formData.confirmPassword} onChange={handleChange} required={true} />
 
                             <ConditionalField role={formData.role} showFor="student">
                                 <FormInput label="Your University" type="text" name="university"
                                     placeholder="Search your university..." value={formData.university}
-                                    onChange={handleChange} />
+                                    onChange={handleChange} required={true} />
                             </ConditionalField>
 
                             <button type="submit" className="btn-primary" disabled={isSubmitting}>

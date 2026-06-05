@@ -21,6 +21,11 @@
     font-weight: bold;
 }
 
+.profile-tabs button:focus-visible {
+    outline: 3px solid #3b66cc;
+    outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
     .profile-tabs button {
         flex: 1 1 100%;

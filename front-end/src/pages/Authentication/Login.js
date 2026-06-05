@@ -85,9 +85,9 @@ export default function Login() {
                             <FormDivider text="or log in with email" />
 
                             <FormInput label="Email" type="email" name="email" value={formData.email}
-                                onChange={handleChange} />
+                                onChange={handleChange} required={true} />
                             <FormInput label="Password" type="password" name="password" value={formData.password}
-                                onChange={handleChange} />
+                                onChange={handleChange} required={true} />
                             <button type="submit" className="btn-primary" disabled={isSubmitting}>
                                 {isSubmitting ? "Logging in..." : "Log In"}
                             </button>

@@ -23,8 +23,9 @@ export default function HousingPreferences({ preferences, onChange }) {
             <h2>Housing Preferences</h2>
 
             <div className="input-group">
-                <label>Budget Range (per month)</label>
+                <label htmlFor="budget-range">Budget Range (per month)</label>
                 <input
+                    id="budget-range"
                     type="range"
                     min="500"
                     max="3000"
@@ -35,11 +36,13 @@ export default function HousingPreferences({ preferences, onChange }) {
 
             <div className="input-group">
                 <label>Bedrooms</label>
-                <div className="btn-toggle-group">
+                <div className="btn-toggle-group" role="group" aria-label="Bedroom options">
                     {bedroomOptions.map(bedroom => (
                         <button
                             key={bedroom}
+                            type="button"
                             className={preferences.bedrooms === bedroom ? 'selected' : ''}
+                            aria-pressed={preferences.bedrooms === bedroom}
                             onClick={() => onChange({ ...preferences, bedrooms: bedroom })}>
                             {bedroom}
                         </button>
@@ -49,11 +52,13 @@ export default function HousingPreferences({ preferences, onChange }) {
 
             <div className="input-group">
                 <label>Max Distance to Campus</label>
-                <div className="distance-options">
+                <div className="distance-options" role="group" aria-label="Distance options">
                     {distanceOptions.map(distance => (
                         <button
                             key={distance}
+                            type="button"
                             className={preferences.maxDistance === distance ? 'selected' : ''}
+                            aria-pressed={preferences.maxDistance === distance}
                             onClick={() => onChange({ ...preferences, maxDistance: distance })}>
                             {distance}
                         </button>
@@ -63,11 +68,13 @@ export default function HousingPreferences({ preferences, onChange }) {
 
             <div className="input-group">
                 <label>Amenities</label>
-                <div className="amenities-grid">
+                <div className="amenities-grid" role="group" aria-label="Amenity preferences">
                     {amenityOptions.map(amenity => (
                         <button
                             key={amenity}
+                            type="button"
                             className={`chip ${preferences.amenities?.includes(amenity) ? 'selected' : ''}`}
+                            aria-pressed={preferences.amenities?.includes(amenity)}
                             onClick={() => handleAmenityClick(amenity)}>
                             {amenity}
                         </button>

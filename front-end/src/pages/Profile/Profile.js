@@ -257,7 +257,7 @@ export default function Profile() {
                 </div>
                 <ProfileTabs activeTab={activeTab} onTabClick={handleTabClick} />
                 {activeTab === 'Account' && (
-                    <div className="settings-grid">
+                    <div id="profile-panel-0" role="tabpanel" aria-labelledby="profile-tab-0" tabIndex={0} className="settings-grid">
                         <section className="card account-card">
                             <h2>Account Information</h2>
                             <form onSubmit={handleAccountSubmit} className="account-form">
@@ -318,7 +318,7 @@ export default function Profile() {
                     </div>
                 )}
                 {activeTab === 'Preferences' && (
-                    <>
+                    <section id="profile-panel-1" role="tabpanel" aria-labelledby="profile-tab-1" tabIndex={0}>
                         <div className="settings-grid">
                             <HousingPreferences
                                 preferences={preferences}
@@ -329,11 +329,11 @@ export default function Profile() {
                                 onChange={setNotificationSettings}
                             />
                         </div>
-                        <div className="status-row">
+                        <div className="status-row" role="status" aria-live="polite">
                             {isSavingPreferences && <p>Saving preferences...</p>}
                             {isSavingNotifications && <p>Saving notification settings...</p>}
                         </div>
-                    </>
+                    </section>
                 )}
             </main>
             <Footer />

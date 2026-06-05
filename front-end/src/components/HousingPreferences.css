@@ -42,6 +42,12 @@
     cursor: pointer;
 }
 
+.btn-toggle-group button:focus-visible,
+.chip:focus-visible {
+    outline: 3px solid #3b66cc;
+    outline-offset: 2px;
+}
+
 .selected {
     background-color: #3b66cc !important;
     color: white;

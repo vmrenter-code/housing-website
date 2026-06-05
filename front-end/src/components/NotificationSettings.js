@@ -11,12 +11,19 @@ const toggleItems = [
     { key: 'weeklyDigest', label: 'Weekly digest email' }
 ];
 
-function ToggleRow({ label, active, onToggle }) {
+function ToggleRow({ label, active, onToggle, id }) {
     return (
         <div className="toggle-row">
             <span>{label}</span>
-            <label className="switch">
-                <input type="checkbox" checked={active} onChange={(e) => onToggle(e.target.checked)} />
+            <label className="switch" htmlFor={id}>
+                <input
+                    id={id}
+                    type="checkbox"
+                    checked={active}
+                    onChange={(e) => onToggle(e.target.checked)}
+                    aria-checked={active}
+                    role="switch"
+                />
                 <span className="slider round"></span>
             </label>
         </div>
@@ -33,6 +40,7 @@ export default function NotificationSettings({ notificationSettings, onChange })
                 {toggleItems.map(item => (
                     <ToggleRow
                         key={item.key}
+                        id={`notification-toggle-${item.key}`}
                         label={item.label}
                         active={notificationSettings[item.key] ?? false}
                         onToggle={(value) => onChange({ ...notificationSettings, [item.key]: value })}
