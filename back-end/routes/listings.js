@@ -1,8 +1,59 @@
 const express = require('express');
 const Listing = require('../models/Listing');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
+
+function parseDistancePreference(pref) {
+    if (!pref || pref === 'Any') return Number.MAX_SAFE_INTEGER;
+    if (pref.includes('<1')) return 1;
+    if (pref.includes('1-3')) return 3;
+    if (pref.includes('3-5')) return 5;
+    if (pref.includes('5+')) return Number.MAX_SAFE_INTEGER;
+    const numeric = Number(pref.replace(/[^0-9]/g, ''));
+    return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
+}
+
+function matchesListing(listing, user) {
+    const prefs = user.preferences || {};
+    const budgetMatch = listing.price <= (prefs.budget ?? Number.MAX_SAFE_INTEGER);
+    const bedroomMatch = prefs.bedrooms && prefs.bedrooms !== 'Any'
+        ? listing.bedrooms >= Number(prefs.bedrooms)
+        : true;
+    const universityMatch = user.university
+        ? listing.university === user.university
+        : true;
+    const distanceMax = parseDistancePreference(prefs.maxDistance);
+    const distanceMatch = listing.distanceToCampus <= distanceMax;
+    const amenitiesMatch = Array.isArray(prefs.amenities) && prefs.amenities.length > 0
+        ? prefs.amenities.every(amenity => listing.amenities.includes(amenity))
+        : true;
+
+    return budgetMatch && bedroomMatch && universityMatch && distanceMatch && amenitiesMatch;
+}
+
+async function createMatchNotifications(listing) {
+    const users = await User.find({
+        role: 'student',
+        'notificationSettings.newMatches': true
+    });
+
+    const matchedUsers = users.filter(user => matchesListing(listing, user));
+
+    if (!matchedUsers.length) return;
+
+    const notifications = matchedUsers.map(user => ({
+        recipient: user._id,
+        listing: listing._id,
+        title: 'New listing match found',
+        message: `A new listing titled \"${listing.title}\" matches your preferences.`,
+        type: 'new-match'
+    }));
+
+    await Notification.insertMany(notifications);
+}
 
 /* GET all listings */
 router.get('/', async (req, res) => {
@@ -42,6 +93,7 @@ router.post('/', auth, async (req, res) => {
         });
 
         const savedListing = await listing.save();
+        await createMatchNotifications(savedListing);
 
         res.status(201).json(savedListing);
     } catch (err) {
