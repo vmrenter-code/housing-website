@@ -20,6 +20,7 @@ export default function Landing() {
   };
 
   const featureActions = {
+    'Interactive Map': () => navigate('/map'),
     'Smart Alerts': () => navigate('/notifications'),
   };
 

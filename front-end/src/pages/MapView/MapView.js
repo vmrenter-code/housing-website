@@ -40,7 +40,7 @@ export default function MapView() {
     const [loading, setLoading] = useState(false);
     const [fetchError, setFetchError] = useState(null);
     const [userPosition, setUserPosition] = useState(null);
-    const [mapCenter, setMapCenter] = useState([34.0522, -118.2437]);
+    const [mapCenter, setMapCenter] = useState([37.0, -119.5]);
     const [activeListingId, setActiveListingId] = useState(null);
     const markerRefs = useRef({});
 
@@ -105,9 +105,14 @@ export default function MapView() {
         showTransit,
     });
 
-    const displayListings = distanceLimit !== 'any'
+    let displayListings = distanceLimit !== 'any'
         ? listings.filter(l => l.distanceToCampus <= Number(distanceLimit))
-        : listings;
+        : [...listings];
+
+    // Sort by closest to campus when a location has been searched
+    if (locationQuery || userPosition) {
+        displayListings.sort((a, b) => a.distanceToCampus - b.distanceToCampus);
+    }
 
     const mappableListings = displayListings.filter(
         l => l.latitude != null && l.longitude != null
@@ -271,7 +276,7 @@ export default function MapView() {
                     >
                         <MapContainer
                             center={mapCenter}
-                            zoom={13}
+                            zoom={6}
                             style={{ height: '100%', width: '100%' }}
                         >
                             <TileLayer
