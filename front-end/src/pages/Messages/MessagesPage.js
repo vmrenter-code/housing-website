@@ -1,65 +1,159 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { API_BASE } from '../../utils.js';
 import './MessagesPage.css';
 
-export default function MessagesPage() {
-  const [messages, setMessages] = useState([]);
-  const [selectedListingId, setSelectedListingId] = useState(null);
-  const [replyText, setReplyText] = useState('');
+function getUserId(value) {
+  return value && typeof value === 'object' ? value._id : value;
+}
 
-  useEffect(() => {
+function getUserLabel(user) {
+  if (!user) return 'Unknown user';
+  return user.fullName || user.email || 'Unknown user';
+}
+
+function getUserEmail(user) {
+  if (!user || typeof user !== 'object') return '';
+  return user.email || '';
+}
+
+export default function MessagesPage() {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [selectedThreadKey, setSelectedThreadKey] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const currentUser = useMemo(() => {
     try {
-      const existing = JSON.parse(localStorage.getItem('messages') || '[]');
-      setMessages(existing);
-    } catch (e) {
-      setMessages([]);
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch (err) {
+      return null;
     }
   }, []);
+  const currentUserId = currentUser?.id || currentUser?._id || '';
 
-  const threads = messages.reduce((acc, msg) => {
-    const key = msg.listingId;
-    acc[key] = acc[key] || [];
-    acc[key].push(msg);
-    return acc;
-  }, {});
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
-  const listingSummaries = Object.keys(threads).map((listingId) => {
-    const thread = threads[listingId];
-    const last = thread[thread.length - 1];
-    return {
-      listingId: Number(listingId),
-      title: last.listingTitle || `Listing ${listingId}`,
-      lastMessage: last.content,
-      lastTime: last.timestamp,
-      count: thread.length,
-    };
-  }).sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+    setLoading(true);
+    setFetchError('');
 
-  const selectThread = (id) => {
-    setSelectedListingId(id);
-  };
+    fetch(`${API_BASE}/messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Failed to load messages');
+        }
+        return data;
+      })
+      .then((data) => {
+        setMessages(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setFetchError(err.message || 'Failed to load messages');
+        setLoading(false);
+      });
+  }, [navigate]);
+
+  const threads = useMemo(() => {
+    const grouped = new Map();
+
+    messages.forEach((message) => {
+      const senderId = getUserId(message.sender);
+      const receiverId = getUserId(message.receiver);
+      if (!currentUserId || (senderId !== currentUserId && receiverId !== currentUserId)) return;
+
+      const otherUser = senderId === currentUserId ? message.receiver : message.sender;
+      const conversationListingId = message.listingId || 'general';
+      const threadKey = `${conversationListingId}:${getUserId(otherUser) || 'unknown'}`;
+      const existing = grouped.get(threadKey) || {
+        key: threadKey,
+        listingId: conversationListingId,
+        listingTitle: message.listingTitle || 'Conversation',
+        otherUserId: getUserId(otherUser) || '',
+        otherUser,
+        messages: [],
+      };
+
+      existing.messages.push(message);
+      existing.listingTitle = message.listingTitle || existing.listingTitle;
+      existing.otherUser = otherUser || existing.otherUser;
+      existing.otherUserId = getUserId(otherUser) || existing.otherUserId;
+      grouped.set(threadKey, existing);
+    });
+
+    return Array.from(grouped.values())
+      .map((thread) => {
+        const sortedMessages = [...thread.messages].sort(
+          (a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)
+        );
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
+
+        return {
+          ...thread,
+          messages: sortedMessages,
+          lastMessage,
+          lastTime: lastMessage?.createdAt || lastMessage?.timestamp || '',
+          title: thread.listingTitle || `Conversation with ${getUserLabel(thread.otherUser)}`,
+          preview: lastMessage?.content || '',
+        };
+      })
+      .sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+  }, [messages, currentUserId]);
+
+  useEffect(() => {
+    if (!selectedThreadKey && threads.length) {
+      setSelectedThreadKey(threads[0].key);
+    }
+  }, [threads, selectedThreadKey]);
+
+  const selectedThread = threads.find((thread) => thread.key === selectedThreadKey) || null;
+  const selectedMessages = selectedThread?.messages || [];
 
   const handleReply = () => {
-    if (!replyText.trim() || !selectedListingId) return;
-    const origin = (threads[selectedListingId] || []).find((m) => m.sender === 'user') || threads[selectedListingId][0] || {};
-    const reply = {
-      id: Date.now(),
-      listingId: selectedListingId,
-      listingTitle: origin.listingTitle || `Listing ${selectedListingId}`,
-      sender: 'user',
-      name: origin.name || '',
-      email: origin.email || '',
-      content: replyText,
-      timestamp: new Date().toISOString(),
-    };
-    const updated = [...messages, reply];
-    localStorage.setItem('messages', JSON.stringify(updated));
-    setMessages(updated);
-    setReplyText('');
-  };
+    if (!replyText.trim() || !selectedThread) return;
 
-  const selectedMessages = selectedListingId ? ([...(threads[selectedListingId] || [])].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))) : [];
+    const token = localStorage.getItem('token');
+    if (!token || !selectedThread.otherUserId) return;
+
+    fetch(`${API_BASE}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        receiver: selectedThread.otherUserId,
+        content: replyText,
+        listingId: selectedThread.listingId,
+        listingTitle: selectedThread.listingTitle,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Unable to send message');
+        }
+        return data;
+      })
+      .then((savedMessage) => {
+        setMessages((current) => [savedMessage, ...current]);
+        setReplyText('');
+      })
+      .catch(() => {
+        setFetchError('Unable to send reply. Please try again.');
+      });
+  };
 
   return (
     <div className="messages-page">
@@ -67,16 +161,18 @@ export default function MessagesPage() {
       <main className="messages-main">
         <aside className="threads-list">
           <h3>Conversations</h3>
-          {listingSummaries.length === 0 && <p>No messages yet.</p>}
+          {loading && <p>Loading conversations...</p>}
+          {!loading && threads.length === 0 && <p>No messages yet.</p>}
+          {fetchError && <p role="alert" className="messages-error">{fetchError}</p>}
           <ul>
-            {listingSummaries.map((s) => (
+            {threads.map((thread) => (
               <li
-                key={s.listingId}
-                className={s.listingId === selectedListingId ? 'active' : ''}
-                onClick={() => selectThread(s.listingId)}
+                key={thread.key}
+                className={thread.key === selectedThreadKey ? 'active' : ''}
+                onClick={() => setSelectedThreadKey(thread.key)}
               >
-                <strong>{s.title}</strong>
-                <div className="preview">{s.lastMessage}</div>
+                <strong>{thread.title}</strong>
+                <div className="preview">{thread.preview}</div>
               </li>
             ))}
           </ul>
@@ -84,19 +180,28 @@ export default function MessagesPage() {
 
         <section className="conversation">
           <h3>Conversation</h3>
-          {!selectedListingId && <p>Select a conversation to view messages.</p>}
-          {selectedListingId && (
+          {!selectedThread && !loading && <p>Select a conversation to view messages.</p>}
+
+          {selectedThread && (
             <div className="messages-log">
-              {selectedMessages.map((m) => (
-                <div key={m.id} className={m.sender === 'user' ? 'msg user' : 'msg agent'}>
-                  <div className="msg-meta">{m.sender} — {new Date(m.timestamp).toLocaleString()}</div>
-                  <div className="msg-content">{m.content}</div>
-                </div>
-              ))}
+              {selectedMessages.map((message) => {
+                const senderId = getUserId(message.sender);
+                const isMine = senderId === currentUserId;
+                const senderName = getUserLabel(message.sender);
+                const senderEmail = getUserEmail(message.sender);
+                const senderLabel = senderEmail ? `${senderName} (${senderEmail})` : senderName;
+
+                return (
+                  <div key={message._id || message.id} className={isMine ? 'msg user' : 'msg agent'}>
+                    <div className="msg-meta">{senderLabel} — {new Date(message.createdAt || message.timestamp).toLocaleString()}</div>
+                    <div className="msg-content">{message.content}</div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {selectedListingId && (
+          {selectedThread && (
             <div className="reply-box">
               <textarea
                 placeholder="Write a message..."

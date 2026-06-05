@@ -54,28 +54,42 @@ export default function ListingDetailPage() {
       alert('Please enter a message');
       return;
     }
-    const msg = {
-      id: Date.now(),
-      listingId: listing._id,
-      listingTitle: listing.title,
-      sender: 'user',
-      name: name || '',
-      email: email || '',
-      content: message,
-      timestamp: new Date().toISOString(),
-    };
-    try {
-      const existing = JSON.parse(localStorage.getItem('messages') || '[]');
-      existing.push(msg);
-      localStorage.setItem('messages', JSON.stringify(existing));
-    } catch (e) {
-      localStorage.setItem('messages', JSON.stringify([msg]));
+    const token = localStorage.getItem('token');
+    const receiverId = listing.landlord?._id;
+
+    if (!token || !receiverId) {
+      alert('Please log in to send a message.');
+      return;
     }
-    setMessage('');
-    setName('');
-    setEmail('');
-    setSent(true);
-    setTimeout(() => setSent(false), 2000);
+
+    fetch(`${API_BASE}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        receiver: receiverId,
+        content: message,
+        listingId: listing._id,
+        listingTitle: listing.title,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Unable to send message');
+        }
+
+        setMessage('');
+        setName('');
+        setEmail('');
+        setSent(true);
+        setTimeout(() => setSent(false), 2000);
+      })
+      .catch(() => {
+        alert('Unable to send message. Please try again.');
+      });
   };
 
   if (loading) {

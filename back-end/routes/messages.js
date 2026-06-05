@@ -1,12 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
+const auth = require('../middleware/auth');
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
-        const message = await Message.create(req.body);
+        const { receiver, content, listingId = '', listingTitle = '' } = req.body;
 
-        res.status(201).json(message);
+        if (!receiver || !content || !content.trim()) {
+            return res.status(400).json({ error: 'receiver and content are required' });
+        }
+
+        const message = await Message.create({
+            sender: req.user.id,
+            receiver,
+            content: content.trim(),
+            listingId,
+            listingTitle
+        });
+
+        const populatedMessage = await Message.findById(message._id)
+            .populate('sender', 'fullName email role')
+            .populate('receiver', 'fullName email role');
+
+        res.status(201).json(populatedMessage);
     } catch (err) {
         res.status(400).json({
             error: err.message
@@ -14,11 +31,12 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const messages = await Message.find()
-            .populate('sender', 'fullName email')
-            .populate('receiver', 'fullName email')
+            .where({ $or: [{ sender: req.user.id }, { receiver: req.user.id }] })
+            .populate('sender', 'fullName email role')
+            .populate('receiver', 'fullName email role')
             .sort({ createdAt: -1 });
 
         res.json(messages);
@@ -29,10 +47,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/conversation/:userId', async (req, res) => {
+router.get('/conversation/:userId', auth, async (req, res) => {
     try {
-        const { currentUserId } = req.query;
         const otherUserId = req.params.userId;
+        const currentUserId = req.user.id;
 
         const messages = await Message.find({
             $or: [
@@ -40,8 +58,8 @@ router.get('/conversation/:userId', async (req, res) => {
                 { sender: otherUserId, receiver: currentUserId }
             ]
         })
-            .populate('sender', 'fullName email')
-            .populate('receiver', 'fullName email')
+            .populate('sender', 'fullName email role')
+            .populate('receiver', 'fullName email role')
             .sort({ createdAt: 1 });
 
         res.json(messages);
@@ -52,7 +70,7 @@ router.get('/conversation/:userId', async (req, res) => {
     }
 });
 
-router.patch('/:id/read', async (req, res) => {
+router.patch('/:id/read', auth, async (req, res) => {
     try {
         const message = await Message.findByIdAndUpdate(
             req.params.id,
