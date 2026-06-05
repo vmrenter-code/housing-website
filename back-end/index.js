@@ -23,6 +23,7 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/listings', require('./routes/listings'));
 app.use('/api/applications', require('./routes/applications'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/saved-listings', require('./routes/savedListings'));
 
 // A simple root route to test if the server is up
 app.get('/', (req, res) => {
