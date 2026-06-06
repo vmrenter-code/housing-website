@@ -1,90 +1,132 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar.js';
 import Footer from '../../components/Footer.js';
+import { API_BASE } from '../../utils.js';
 import './Notifications.css';
 
+function formatNotificationTime(createdAt) {
+  if (!createdAt) return '';
 
+  const diffMs = Date.now() - new Date(createdAt).getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
 
-const initialNotifications = [
-  { 
-    id: 1,
-    title: 'New Match!',
-    body: '3 new listings near UCLA match your filters.',
-    time: '2 min ago',
-    unread: true,
-  },
-  {
-    id: 2,
-    title: 'Message Received',
-    body: 'John from Oak Apartments replied to your inquiry.',
-    time: '15 min ago',
-    unread: true,
-  },
-  {
-    id: 3,
-    title: 'Price Drop!',
-    body: 'Pine Studios dropped to $820/mo.',
-    time: '1 hr ago',
-    unread: true,
-  },
-  {
-    id: 4,
-    title: 'Saved',
-    body: 'You saved Maple House to your favorites.',
-    time: '3 hrs ago',
-    unread: false,
-  },
-  {
-    id: 5,
-    title: 'New Match!',
-    body: '5 new listings near UCLA match your filters.',
-    time: 'Yesterday',
-    unread: false,
-  },
-  {
-    id: 6,
-    title: 'Application Update',
-    body: 'Your application to Campus Suites is under review.',
-    time: '2 days ago',
-    unread: false,
-  },
-  {
-    id: 7,
-    title: 'Message Received',
-    body: 'Sarah from Elm Court sent you a message.',
-    time: '3 days ago',
-    unread: false,
-  },
-  {
-    id: 8,
-    title: 'Reminder',
-    body: 'You have 3 unseen listings in your saved folder.',
-    time: '1 week ago',
-    unread: false,
-  },
-];
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} hr ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Yesterday';
+  return `${diffDays} days ago`;
+}
 
 export default function NotificationsPage() {
-    const [notifications, setNotifications] = useState(initialNotifications);
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
 
-    const unreadCount = notifications.filter((n) => n.unread).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-    const handleMarkAllRead = () => {
-        setNotifications( (prev) => prev.map( (n) => ({...n, unread: false})));
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setFetchError('Please log in to view notifications.');
+        return;
+      }
+
+      setLoading(true);
+      setFetchError(null);
+
+      try {
+        const res = await fetch(`${API_BASE}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        setNotifications(data);
+      } catch (err) {
+        setFetchError('Failed to load notifications. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.isRead) {
+      await handleMarkOneRead(notification._id);
     }
 
-    const handleMarkOneRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
-    );
+    const listingId =
+      typeof notification.listing === 'object'
+        ? notification.listing._id
+        : notification.listing;
+
+    if (listingId) {
+      navigate(`/listing/${listingId}`);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`${API_BASE}/notifications/mark-all-read`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+    } catch (err) {
+      setFetchError('Failed to mark all notifications as read.');
+    }
+  };
+
+  const handleMarkOneRead = async (id) => {
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isRead: true }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+    } catch (err) {
+      setFetchError('Failed to update notification.');
+    }
   };
 
   return (
     <div className="notifications-page">
       <Navbar />
- 
+
       <main className="notifications-main">
-        {/* Header row */}
         <div className="notifications-header">
           <div className="notifications-title-group">
             <h1 className="notifications-title">Notifications</h1>
@@ -92,6 +134,7 @@ export default function NotificationsPage() {
               <span className="notifications-badge">{unreadCount}</span>
             )}
           </div>
+
           <button
             className="notifications-mark-all-btn"
             onClick={handleMarkAllRead}
@@ -100,33 +143,48 @@ export default function NotificationsPage() {
             Mark All Read
           </button>
         </div>
- 
-        {/* Notification list */}
+
+        {loading && <p>Loading notifications...</p>}
+
+        {fetchError && (
+          <p role="alert" className="notifications-error">
+            {fetchError}
+          </p>
+        )}
+
+        {!loading && !fetchError && notifications.length === 0 && (
+          <p className="notifications-empty">No notifications yet.</p>
+        )}
+
         <div className="notifications-list">
           {notifications.map((n) => (
             <div
-              key={n.id}
-              className={`notification-item ${n.unread ? 'notification-item--unread' : ''}`}
-              onClick={() => n.unread && handleMarkOneRead(n.id)}
-              style={{ cursor: n.unread ? 'pointer' : 'default' }}
+              key={n._id}
+              className={`notification-item ${
+                !n.isRead ? 'notification-item--unread' : ''
+              }`}
+              onClick={() => handleNotificationClick(n)}
+              style={{ cursor: n.listing ? 'pointer' : 'default' }}
             >
-              {n.unread && <div className="notification-accent-bar" />}
+              {!n.isRead && <div className="notification-accent-bar" />}
+
               <div className="notification-content">
                 <p className="notification-item-title">{n.title}</p>
-                <p className="notification-item-body">{n.body}</p>
+                <p className="notification-item-body">{n.message}</p>
               </div>
+
               <div className="notification-meta">
-                <span className="notification-time">{n.time}</span>
-                {n.unread && <span className="notification-dot" />}
+                <span className="notification-time">
+                  {formatNotificationTime(n.createdAt)}
+                </span>
+                {!n.isRead && <span className="notification-dot" />}
               </div>
             </div>
           ))}
         </div>
       </main>
- 
+
       <Footer />
     </div>
   );
-    
-
 }

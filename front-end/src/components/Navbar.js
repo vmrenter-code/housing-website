@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
-const NAV_LINKS = ['Browse', 'Map', 'Saved', 'Messages', 'Profile'];
+const NAV_LINKS = ['Browse', 'Map', 'Saved', 'Messages', 'Notifications', 'Profile'];
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -20,6 +20,9 @@ export default function Navbar() {
     }
     if (link === 'Messages') {
       navigate('/messages');
+    }
+    if (link === 'Notifications') {
+      navigate('/notifications');
     }
     if (link === 'Profile') {
       const token = localStorage.getItem('token');
