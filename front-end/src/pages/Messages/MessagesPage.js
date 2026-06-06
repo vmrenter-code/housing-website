@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { API_BASE } from '../../utils.js';
@@ -17,6 +18,21 @@ function getUserLabel(user) {
 function getUserEmail(user) {
   if (!user || typeof user !== 'object') return '';
   return user.email || '';
+}
+
+function mergeMessages(existingMessages, incomingMessages) {
+  const byId = new Map();
+
+  [...existingMessages, ...incomingMessages].forEach((message) => {
+    const messageId = message?._id || message?.id;
+    if (messageId) {
+      byId.set(messageId, message);
+    }
+  });
+
+  return Array.from(byId.values()).sort(
+    (a, b) => new Date(b.createdAt || b.timestamp) - new Date(a.createdAt || a.timestamp)
+  );
 }
 
 export default function MessagesPage() {
@@ -43,28 +59,64 @@ export default function MessagesPage() {
       return;
     }
 
-    setLoading(true);
-    setFetchError('');
+    let isActive = true;
+    const socket = io(API_BASE.replace(/\/api\/?$/, ''), {
+      auth: { token },
+      transports: ['websocket'],
+    });
 
-    fetch(`${API_BASE}/messages`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
+    const fetchMessages = async ({ silent = false } = {}) => {
+      try {
+        if (!silent) {
+          setLoading(true);
+          setFetchError('');
+        }
+
+        const res = await fetch(`${API_BASE}/messages`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json().catch(() => ({}));
+
         if (!res.ok) {
           throw new Error(data.error || data.message || 'Failed to load messages');
         }
-        return data;
-      })
-      .then((data) => {
+
+        if (!isActive) return;
+
         setMessages(Array.isArray(data) ? data : []);
         setLoading(false);
-      })
-      .catch((err) => {
-        setFetchError(err.message || 'Failed to load messages');
-        setLoading(false);
+      } catch (err) {
+        if (!isActive) return;
+
+        if (!silent) {
+          setFetchError(err.message || 'Failed to load messages');
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchMessages();
+
+      socket.on('message:new', (incomingMessage) => {
+        setMessages((current) => mergeMessages(current, [incomingMessage]));
       });
-  }, [navigate]);
+
+      socket.on('connect', () => {
+        if (isActive) {
+          setFetchError('');
+        }
+      });
+
+      socket.on('connect_error', () => {
+        if (!isActive) return;
+        setFetchError('Live connection failed. Reconnecting in the background.');
+      });
+
+    return () => {
+      isActive = false;
+        socket.disconnect();
+    };
+  }, [navigate, currentUserId]);
 
   const threads = useMemo(() => {
     const grouped = new Map();
@@ -148,7 +200,7 @@ export default function MessagesPage() {
         return data;
       })
       .then((savedMessage) => {
-        setMessages((current) => [savedMessage, ...current]);
+        setMessages((current) => mergeMessages(current, [savedMessage]));
         setReplyText('');
       })
       .catch(() => {

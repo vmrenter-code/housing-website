@@ -23,6 +23,13 @@ router.post('/', auth, async (req, res) => {
             .populate('sender', 'fullName email role')
             .populate('receiver', 'fullName email role');
 
+        const io = req.app.get('io');
+        if (io && populatedMessage) {
+            const senderRoom = `user:${String(populatedMessage.sender?._id || populatedMessage.sender)}`;
+            const receiverRoom = `user:${String(populatedMessage.receiver?._id || populatedMessage.receiver)}`;
+            io.to(senderRoom).to(receiverRoom).emit('message:new', populatedMessage);
+        }
+
         res.status(201).json(populatedMessage);
     } catch (err) {
         res.status(400).json({
