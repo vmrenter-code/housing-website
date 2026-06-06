@@ -1,9 +1,7 @@
 import React from 'react';
 import "./ProfileTabs.css"
 
-export default function ProfileTabs({activeTab, onTabClick}) {
-    const tabs = ['Account', 'Preferences', 'My Listings', 'Notifications', 'Saved Listings'];
-
+export default function ProfileTabs({ tabs = ['Account', 'Preferences', 'My Listings'], activeTab, onTabClick }) {
     const handleKeyDown = (event, index) => {
         if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
 
@@ -20,10 +18,10 @@ export default function ProfileTabs({activeTab, onTabClick}) {
             {tabs.map((tab, index) => (
                 <button
                     key={tab}
-                    id={`profile-tab-${index}`}
+                    id={`profile-tab-${tab.replace(/\s+/g, '-').toLowerCase()}`}
                     role="tab"
                     aria-selected={activeTab === tab}
-                    aria-controls={`profile-panel-${index}`}
+                    aria-controls={`profile-panel-${tab.replace(/\s+/g, '-').toLowerCase()}`}
                     tabIndex={activeTab === tab ? 0 : -1}
                     className={activeTab === tab ? 'active' : ''}
                     onClick={() => onTabClick(tab)}
