@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_BASE } from '../../utils';
+import { API_BASE, isOnline } from '../../utils';
 import ErrorDialog from '../../components/ErrorDialog';
 
 const defaultListingForm = {
@@ -72,6 +72,12 @@ export default function MyListingsSection({ user }) {
         const token = localStorage.getItem('token');
         if (!token) return;
 
+        if (!isOnline()) {
+            setListingError('Offline mode: unable to refresh listings until you reconnect.');
+            setIsLoadingListings(false);
+            return;
+        }
+
         setIsLoadingListings(true);
         fetch(`${API_BASE}/listings/mine/all`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -121,6 +127,11 @@ export default function MyListingsSection({ user }) {
 
         if (!canManageListings) {
             setListingError('Only landlord/agent accounts can manage listings.');
+            return;
+        }
+
+        if (!isOnline()) {
+            setListingError('Offline mode: listing updates require a network connection.');
             return;
         }
 
