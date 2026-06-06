@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { API_BASE } from '../../utils.js';
+import { API_BASE, readOfflineCache, writeOfflineCache } from '../../utils.js';
+import useOnlineStatus from '../../hooks/useOnlineStatus';
 import './MessagesPage.css';
 
 function getUserId(value) {
@@ -43,6 +44,8 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [showThreads, setShowThreads] = useState(true);
+  const [usingOfflineMessages, setUsingOfflineMessages] = useState(false);
+  const online = useOnlineStatus();
   const currentUser = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem('user') || 'null');
@@ -51,9 +54,9 @@ export default function MessagesPage() {
     }
   }, []);
   const currentUserId = currentUser?.id || currentUser?._id || '';
-
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const cachedMessages = readOfflineCache('offlineMessages') || [];
     if (!token) {
       navigate('/login');
       return;
@@ -72,6 +75,15 @@ export default function MessagesPage() {
           setFetchError('');
         }
 
+        setUsingOfflineMessages(false);
+
+        if (!online && cachedMessages.length) {
+          setMessages(cachedMessages);
+          setLoading(false);
+          setUsingOfflineMessages(true);
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/messages`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -83,11 +95,12 @@ export default function MessagesPage() {
 
         if (!isActive) return;
 
-        setMessages(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        setMessages(list);
+        writeOfflineCache('offlineMessages', list);
         setLoading(false);
       } catch (err) {
         if (!isActive) return;
-
         if (!silent) {
           setFetchError(err.message || 'Failed to load messages');
           setLoading(false);
@@ -95,28 +108,33 @@ export default function MessagesPage() {
       }
     };
 
+    // initial load
     fetchMessages();
 
-      socket.on('message:new', (incomingMessage) => {
-        setMessages((current) => mergeMessages(current, [incomingMessage]));
-      });
+    // socket handlers
+    socket.on('message:new', (incomingMessage) => {
+      if (!isActive) return;
+      setMessages((current) => mergeMessages(current, [incomingMessage]));
+    });
 
-      socket.on('connect', () => {
-        if (isActive) {
-          setFetchError('');
-        }
-      });
+    socket.on('connect', () => {
+      if (isActive) setFetchError('');
+    });
 
-      socket.on('connect_error', () => {
-        if (!isActive) return;
-        setFetchError('Live connection failed. Reconnecting in the background.');
-      });
+    socket.on('connect_error', () => {
+      if (!isActive) return;
+      setFetchError('Live connection failed. Reconnecting in the background.');
+    });
 
     return () => {
       isActive = false;
+      try {
         socket.disconnect();
+      } catch (e) {
+        // ignore
+      }
     };
-  }, [navigate, currentUserId]);
+  }, [navigate, online]);
 
   const threads = useMemo(() => {
     const grouped = new Map();
@@ -175,6 +193,10 @@ export default function MessagesPage() {
 
   const handleReply = () => {
     if (!replyText.trim() || !selectedThread) return;
+    if (!online) {
+      setFetchError('Offline mode: reply cannot be sent until you reconnect.');
+      return;
+    }
 
     const token = localStorage.getItem('token');
     if (!token || !selectedThread.otherUserId) return;
@@ -200,7 +222,7 @@ export default function MessagesPage() {
         return data;
       })
       .then((savedMessage) => {
-        setMessages((current) => mergeMessages(current, [savedMessage]));
+        setMessages((current) => [savedMessage, ...current]);
         setReplyText('');
       })
       .catch(() => {
@@ -219,6 +241,7 @@ export default function MessagesPage() {
           <h3>Conversations</h3>
           {loading && <p>Loading conversations...</p>}
           {!loading && threads.length === 0 && <p>No messages yet.</p>}
+          {usingOfflineMessages && <p className="offline-info">Offline mode: showing cached conversations.</p>}
           {fetchError && <p role="alert" className="messages-error">{fetchError}</p>}
           <ul>
             {threads.map((thread) => (
@@ -272,7 +295,10 @@ export default function MessagesPage() {
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />
-              <button onClick={handleReply}>Send</button>
+              {!online && (
+                <p className="offline-info">Offline mode: replies cannot be sent until you reconnect.</p>
+              )}
+              <button onClick={handleReply} disabled={!online}>Send</button>
             </div>
           )}
         </section>

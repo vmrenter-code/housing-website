@@ -127,3 +127,37 @@
   box-shadow: 0 0 0 2px rgba(47, 110, 219, 0.1);
 }
 
+.filter-dropdown-all {
+  min-width: 220px;
+}
+
+.filter-dropdown-all .filter-bar-btn {
+  width: 100%;
+  text-align: left;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+
+  .filter-bar-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .filter-bar-item:not(.filter-bar-all-item) {
+    display: none;
+  }
+
+  .filter-bar-left.mobile-expanded .filter-bar-item {
+    display: block;
+  }
+
+  .filter-bar-left.mobile-expanded .filter-bar-all-item {
+    width: 100%;
+  }
+
+  .filter-bar-left.mobile-expanded .filter-bar-item:not(.filter-bar-all-item) {
+    width: calc(50% - 6px);
+  }
+}

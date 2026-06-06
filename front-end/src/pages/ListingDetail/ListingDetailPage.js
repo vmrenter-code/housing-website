@@ -3,7 +3,8 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import SaveButton from '../../components/SaveButton';
-import { API_BASE } from '../../utils.js';
+import { API_BASE, readOfflineCache, writeOfflineCache } from '../../utils.js';
+import useOnlineStatus from '../../hooks/useOnlineStatus';
 import './ListingDetailPage.css';
 
 export default function ListingDetailPage() {
@@ -19,12 +20,21 @@ export default function ListingDetailPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
+  const online = useOnlineStatus();
 
   const mainRef = useRef(null);
   useEffect(() => { mainRef.current?.focus(); }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const cachedListing = readOfflineCache(`offlineListing:${id}`);
+
+    if (!online && cachedListing) {
+      setListing(cachedListing);
+      setLoading(false);
+      return;
+    }
+
     fetch(`${API_BASE}/listings/${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
@@ -35,13 +45,19 @@ export default function ListingDetailPage() {
       })
       .then(data => {
         setListing(data);
+        writeOfflineCache(`offlineListing:${id}`, data);
         setLoading(false);
       })
       .catch(err => {
-        setFetchError(err.message === 'not_found' ? 'Listing not found.' : 'Failed to load listing.');
+        if (cachedListing) {
+          setListing(cachedListing);
+          setFetchError('Unable to refresh listing, showing cached data.');
+        } else {
+          setFetchError(err.message === 'not_found' ? 'Listing not found.' : 'Failed to load listing.');
+        }
         setLoading(false);
       });
-  }, [id]);
+  }, [id, online]);
 
   const handleBack = () => {
     navigate(location.state?.from || '/map', {
@@ -52,6 +68,10 @@ export default function ListingDetailPage() {
   const onSend = () => {
     if (!message.trim()) {
       alert('Please enter a message');
+      return;
+    }
+    if (!online) {
+      alert('Offline mode: message cannot be sent until you reconnect.');
       return;
     }
     const token = localStorage.getItem('token');
@@ -200,10 +220,13 @@ export default function ListingDetailPage() {
               onChange={(e) => setMessage(e.target.value)}
             />
 
+            {!online && (
+              <p className="offline-info">Offline mode: messages cannot be sent until you reconnect.</p>
+            )}
             <button
               className="send-button"
               onClick={onSend}
-              disabled={sent}
+              disabled={sent || !online}
               aria-label={sent ? 'Message sent' : 'Send message'}
             >
               {sent ? 'Sent ✓' : 'Send Message'}

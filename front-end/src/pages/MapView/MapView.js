@@ -93,6 +93,7 @@ export default function MapView() {
         if (locationQuery) params.set('q', locationQuery);
         if (priceLimit !== 'any') params.set('maxPrice', priceLimit);
         if (homeType !== 'any') params.set('housingType', homeType.toLowerCase());
+        if (distanceLimit !== 'any') params.set('maxDistance', distanceLimit);
 
         setLoading(true);
         setFetchError(null);
@@ -114,7 +115,7 @@ export default function MapView() {
                 setFetchError('Failed to load listings.');
                 setLoading(false);
             });
-    }, [locationQuery, priceLimit, homeType]);
+    }, [locationQuery, priceLimit, homeType, distanceLimit]);
 
     const handleSearchSubmit = (event) => {
         event.preventDefault();
@@ -147,9 +148,7 @@ export default function MapView() {
         showTransit,
     });
 
-    let displayListings = distanceLimit !== 'any'
-        ? listings.filter(l => l.distanceToCampus <= Number(distanceLimit))
-        : [...listings];
+    let displayListings = [...listings];
 
     // Sort by closest to campus when a location has been searched
     if (locationQuery || userPosition) {

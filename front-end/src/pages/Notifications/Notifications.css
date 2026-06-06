@@ -177,3 +177,13 @@
     justify-content: flex-end;
   }
 }
+
+.notifications-error {
+  color: #b00020;
+  font-weight: bold;
+}
+
+.notifications-empty {
+  color: var(--mid);
+  font-size: 0.95rem;
+}

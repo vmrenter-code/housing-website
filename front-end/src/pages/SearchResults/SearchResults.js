@@ -17,6 +17,7 @@ export default function SearchResults() {
     const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
     const [selectedBedrooms, setSelectedBedrooms] = useState([]);
     const [selectedHomeTypes, setSelectedHomeTypes] = useState([]);
+    const [selectedDistance, setSelectedDistance] = useState('any');
 
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -37,6 +38,10 @@ export default function SearchResults() {
         selectedBedrooms.forEach(b => params.append('bedrooms', b));
         selectedHomeTypes.forEach(t => params.append('housingType', t.toLowerCase()));
 
+        if (selectedDistance !== 'any') {
+            params.set('maxDistance', selectedDistance);
+        }
+
         setLoading(true);
         setFetchError(null);
 
@@ -56,8 +61,7 @@ export default function SearchResults() {
                 setFetchError('Failed to load listings. Please try again.');
                 setLoading(false);
             });
-    }, [query, priceRange, selectedBedrooms, selectedHomeTypes]);
-
+    }, [query, priceRange, selectedBedrooms, selectedHomeTypes, selectedDistance]);
     const handleSearchSubmit = (event) => {
         event.preventDefault();
         navigate(`/search?query=${encodeURIComponent(searchValue.trim())}`);
@@ -94,9 +98,11 @@ export default function SearchResults() {
                         onPriceChange={setPriceRange}
                         onBedroomsChange={setSelectedBedrooms}
                         onHomeTypeChange={setSelectedHomeTypes}
+                        onDistanceChange={setSelectedDistance}
                         priceRange={priceRange}
                         selectedBedrooms={selectedBedrooms}
                         selectedHomeTypes={selectedHomeTypes}
+                        selectedDistance={selectedDistance}
                     />
 
                     <div className="search-results-summary">

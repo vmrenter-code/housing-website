@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { API_BASE } from '../../utils';
+import { API_BASE, isOnline } from '../../utils';
 import HousingPreferences from '../../components/HousingPreferences';
 import NotificationSettings from '../../components/NotificationSettings';
+import ErrorDialog from '../../components/ErrorDialog';
 
 const defaultPreferences = {
     budget: 1500,
@@ -23,6 +24,8 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
     const [notificationSettings, setNotificationSettings] = useState(initialNotificationSettings || defaultNotificationSettings);
     const [isSavingPreferences, setIsSavingPreferences] = useState(false);
     const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+    const [preferencesError, setPreferencesError] = useState('');
+    const [notificationsError, setNotificationsError] = useState('');
 
     useEffect(() => {
         if (initialPreferences) {
@@ -44,7 +47,14 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
         if (!token) return;
 
         const timeoutId = setTimeout(() => {
+            if (!isOnline()) {
+                setIsSavingPreferences(false);
+                setPreferencesError('Offline mode: preferences cannot be saved until you reconnect.');
+                return;
+            }
+
             setIsSavingPreferences(true);
+            setPreferencesError('');
             fetch(`${API_BASE}/users/preferences`, {
                 method: 'PATCH',
                 headers: {
@@ -53,8 +63,17 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
                 },
                 body: JSON.stringify(preferences),
             })
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error('Failed to save preferences');
+                    }
+                    return res.json();
+                })
                 .then(() => setIsSavingPreferences(false))
-                .catch(() => setIsSavingPreferences(false));
+                .catch((err) => {
+                    setPreferencesError(err.message || 'Failed to save preferences');
+                    setIsSavingPreferences(false);
+                });
         }, 800);
 
         return () => clearTimeout(timeoutId);
@@ -68,7 +87,14 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
         if (!token) return;
 
         const timeoutId = setTimeout(() => {
+            if (!isOnline()) {
+                setIsSavingNotifications(false);
+                setNotificationsError('Offline mode: notification settings cannot be saved until you reconnect.');
+                return;
+            }
+
             setIsSavingNotifications(true);
+            setNotificationsError('');
             fetch(`${API_BASE}/users/notification`, {
                 method: 'PATCH',
                 headers: {
@@ -77,8 +103,17 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
                 },
                 body: JSON.stringify(notificationSettings),
             })
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error('Failed to save notification settings');
+                    }
+                    return res.json();
+                })
                 .then(() => setIsSavingNotifications(false))
-                .catch(() => setIsSavingNotifications(false));
+                .catch((err) => {
+                    setNotificationsError(err.message || 'Failed to save notification settings');
+                    setIsSavingNotifications(false);
+                });
         }, 800);
 
         return () => clearTimeout(timeoutId);
@@ -95,8 +130,14 @@ export default function PreferencesSection({ user, initialPreferences, initialNo
             </div>
             <div className="status-row" role="status" aria-live="polite">
                 {isSavingPreferences && <p>Saving preferences...</p>}
+                {preferencesError && <p className="form-error">{preferencesError}</p>}
                 {isSavingNotifications && <p>Saving notification settings...</p>}
+                {notificationsError && <p className="form-error">{notificationsError}</p>}
             </div>
+            <ErrorDialog visible={!!preferencesError || !!notificationsError} title="Update Error" message={preferencesError || notificationsError} onClose={() => {
+                setPreferencesError('');
+                setNotificationsError('');
+            }} />
         </section>
     );
 }
