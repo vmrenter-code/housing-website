@@ -1,29 +1,63 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import listings from '../../data/mockListings';
 import './ApplicationPage.css';
+import { API_BASE } from '../../utils.js';
 
 export default function ApplicationPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const listing = listings.find((item) => item.id === Number(id));
+  const [listing, setListing] = useState(null);
+const [loading, setLoading] = useState(true);
+const [fetchError, setFetchError] = useState(null);
 
+useEffect(() => {
+  const token = localStorage.getItem('token');
+
+  fetch(`${API_BASE}/listings/${id}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then((res) => {
+      if (res.status === 404) throw new Error('Listing not found');
+      if (!res.ok) throw new Error('Failed to load listing');
+      return res.json();
+    })
+    .then((data) => {
+      setListing(data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      setFetchError(err.message);
+      setLoading(false);
+    });
+}, [id]);
   const [leaseDuration, setLeaseDuration] = useState('12 mo');
 
-  if (!listing) {
-    return (
-      <div>
-        <Navbar />
-        <main className="application-main">
-          <h2>Listing not found</h2>
-          <button onClick={() => navigate(-1)}>← Back</button>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+if (loading) {
+  return (
+    <div>
+      <Navbar />
+      <main className="application-main">
+        <p>Loading application...</p>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+if (fetchError || !listing) {
+  return (
+    <div>
+      <Navbar />
+      <main className="application-main">
+        <h2>{fetchError || 'Listing not found'}</h2>
+        <button onClick={() => navigate(-1)}>← Back</button>
+      </main>
+      <Footer />
+    </div>
+  );
+}
 
   return (
     <div className="application-page">
@@ -55,15 +89,15 @@ export default function ApplicationPage() {
 
             <h2>{listing.title}</h2>
             <p className="application-address">
-              {listing.address} | {listing.distance}
+              {listing.address} | {listing.distanceToCampus} mi from campus
             </p>
 
             <h2 className="application-price">
-              {listing.price.replace('/mo', ' / month')}
+              ${listing.price} / month
             </h2>
 
             <div className="application-tags">
-              {(listing.tags || []).slice(0, 3).map((tag) => (
+              {[listing.housingType, ...(listing.amenities || [])].filter(Boolean).slice(0, 3).map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
             </div>
