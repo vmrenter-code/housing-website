@@ -23,12 +23,6 @@ We are building a housing web application centered around major universities. Us
 housing options nearby and apply filters such as **price**, **number of rooms**, and **distance to campus**. Users can
 also update personal preferences, save and share favorite listings, and manage the places they're considering.
 
-### Planned Features
-
-- Notifications for new matches in selected areas
-- Direct messaging with property owners or listing agents
-
----
 
 ## Project Resources
 
@@ -58,10 +52,9 @@ housing-website/
 │   ├── public/
 │   ├── src/
 │   │   ├── components/  # Reusable UI elements
-│   │   ├── data/        # Mock-up data
 │   │   ├── pages/       # Route-level components (Home, Listing, etc.)
-│   │   ├── services/    # API calls and data fetching logic
-│   │   ├── utils/       # Helper functions
+│   │   ├── hooks/       # Custom hooks
+│   │   ├── utils.js     # Helper functions
 │   │   ├── App.css
 │   │   ├── App.js       # Routing setup
 │   │   ├── index.css
@@ -69,7 +62,7 @@ housing-website/
 │   ├── package.json
 │   └── package-lock.json
 └── back-end/            # Express.js API
-    ├── controllers/     # Route logic
+    ├── middleware/      # Custom middleware
     ├── models/          # Database schemas
     ├── routes/          # API endpoints
     ├── index.js         # Server Entry point
@@ -83,8 +76,8 @@ housing-website/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later recommended)
-- npm (v9 or later recommended)
+- [Node.js](https://nodejs.org/) (v24 or later recommended)
+- npm (v11 or later recommended)
 
 ### Installation
 
