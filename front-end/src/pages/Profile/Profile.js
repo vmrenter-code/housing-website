@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE } from "../../utils";
+import { API_BASE, isOnline, readOfflineCache, writeOfflineCache } from "../../utils";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import UserHeader from "../../components/UserHeader";
@@ -34,6 +34,7 @@ export default function Profile() {
     const [activeTab, setActiveTab] = useState('Account');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [usingOfflineProfile, setUsingOfflineProfile] = useState(false);
     const [initialPreferences, setInitialPreferences] = useState(defaultPreferences);
     const [initialNotificationSettings, setInitialNotificationSettings] = useState(defaultNotificationSettings);
 
@@ -62,8 +63,24 @@ export default function Profile() {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        const cachedProfile = readOfflineCache('offlineProfile');
+
         if (!token) {
             navigate('/login');
+            return;
+        }
+
+        if (!isOnline() && cachedProfile) {
+            setUser({
+                fullName: cachedProfile.fullName || '',
+                email: cachedProfile.email || '',
+                role: cachedProfile.role || 'student',
+                university: cachedProfile.university || '',
+            });
+            setInitialPreferences({ ...defaultPreferences, ...cachedProfile.preferences });
+            setInitialNotificationSettings({ ...defaultNotificationSettings, ...cachedProfile.notificationSettings });
+            setUsingOfflineProfile(true);
+            setIsLoading(false);
             return;
         }
 
@@ -78,17 +95,36 @@ export default function Profile() {
                 return res.json();
             })
             .then((profile) => {
-                setUser({
+                const normalizedProfile = {
                     fullName: profile.fullName || '',
                     email: profile.email || '',
                     role: profile.role || 'student',
                     university: profile.university || '',
-                });
+                };
+                setUser(normalizedProfile);
                 setInitialPreferences({ ...defaultPreferences, ...profile.preferences });
                 setInitialNotificationSettings({ ...defaultNotificationSettings, ...profile.notificationSettings });
+                writeOfflineCache('offlineProfile', {
+                    ...normalizedProfile,
+                    preferences: { ...defaultPreferences, ...profile.preferences },
+                    notificationSettings: { ...defaultNotificationSettings, ...profile.notificationSettings },
+                });
+                setUsingOfflineProfile(false);
             })
             .catch((err) => {
-                setError(err.message || 'Unable to load profile');
+                if (cachedProfile) {
+                    setUser({
+                        fullName: cachedProfile.fullName || '',
+                        email: cachedProfile.email || '',
+                        role: cachedProfile.role || 'student',
+                        university: cachedProfile.university || '',
+                    });
+                    setInitialPreferences({ ...defaultPreferences, ...cachedProfile.preferences });
+                    setInitialNotificationSettings({ ...defaultNotificationSettings, ...cachedProfile.notificationSettings });
+                    setUsingOfflineProfile(true);
+                } else {
+                    setError(err.message || 'Unable to load profile');
+                }
             })
             .finally(() => {
                 setIsLoading(false);
@@ -138,6 +174,11 @@ export default function Profile() {
                     <button className="logout-btn" onClick={handleLogout}>Log Out</button>
                 </div>
                 <ProfileTabs tabs={allowedTabs} activeTab={activeTab} onTabClick={handleTabClick} />
+                {usingOfflineProfile && (
+                    <div className="offline-banner" role="status" aria-live="polite">
+                        Profile data is loaded from cache because you are offline.
+                    </div>
+                )}
                 {activeTab === 'Account' && (
                     <AccountSection user={user} setUser={setUser} />
                 )}

@@ -80,3 +80,6 @@
 .mobile-toggle{display:none}
 .mobile-toggle button{background:#2f66d0;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
 .messages-error{color:#b00}
+
+.offline-info{background:#fffbdb;color:#6b5000;padding:10px;margin:12px 0;border-radius:6px;border:1px solid #f7e5a5}
+

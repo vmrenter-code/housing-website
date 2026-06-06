@@ -170,3 +170,5 @@
   margin-bottom: 12px;
   cursor: pointer;
 }
+
+.offline-info{background:#fffbdb;color:#6b5000;padding:10px;margin:12px 0;border-radius:6px;border:1px solid #f7e5a5}
