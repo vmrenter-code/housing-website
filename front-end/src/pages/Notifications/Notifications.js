@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar.js';
 import Footer from '../../components/Footer.js';
-import { API_BASE } from '../../utils.js';
+import useOnlineStatus from '../../hooks/useOnlineStatus.js';
+import { API_BASE, isOnline, readOfflineCache, writeOfflineCache } from '../../utils.js';
 import './Notifications.css';
 
 function formatNotificationTime(createdAt) {
@@ -27,20 +28,35 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [usingOfflineNotifications, setUsingOfflineNotifications] = useState(false);
+  const online = useOnlineStatus();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const token = localStorage.getItem('token');
+      const cachedNotifications = readOfflineCache('offlineNotifications') || [];
+      setLoading(true);
+      setFetchError(null);
+      setUsingOfflineNotifications(false);
 
-      if (!token) {
-        setFetchError('Please log in to view notifications.');
+      if (!online) {
+        if (cachedNotifications.length > 0) {
+          setNotifications(cachedNotifications);
+          setUsingOfflineNotifications(true);
+        } else {
+          setFetchError('Offline mode: no cached notifications are available.');
+        }
+        setLoading(false);
         return;
       }
 
-      setLoading(true);
-      setFetchError(null);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setFetchError('Please log in to view notifications.');
+        setLoading(false);
+        return;
+      }
 
       try {
         const res = await fetch(`${API_BASE}/notifications`, {
@@ -53,7 +69,12 @@ export default function NotificationsPage() {
 
         const data = await res.json();
         setNotifications(data);
+        writeOfflineCache('offlineNotifications', data);
       } catch (err) {
+        if (cachedNotifications.length > 0) {
+          setNotifications(cachedNotifications);
+          setUsingOfflineNotifications(true);
+        }
         setFetchError('Failed to load notifications. Please try again.');
       } finally {
         setLoading(false);
@@ -61,7 +82,7 @@ export default function NotificationsPage() {
     };
 
     fetchNotifications();
-  }, []);
+  }, [online]);
 
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
@@ -79,7 +100,16 @@ export default function NotificationsPage() {
   };
 
   const handleMarkAllRead = async () => {
+    if (!isOnline()) {
+      setFetchError('Offline mode: notifications cannot be updated until you reconnect.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
+    if (!token) {
+      setFetchError('Please log in to update notifications.');
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE}/notifications/mark-all-read`, {
@@ -91,16 +121,25 @@ export default function NotificationsPage() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
-      );
+      const updated = notifications.map((n) => ({ ...n, isRead: true }));
+      setNotifications(updated);
+      writeOfflineCache('offlineNotifications', updated);
     } catch (err) {
       setFetchError('Failed to mark all notifications as read.');
     }
   };
 
   const handleMarkOneRead = async (id) => {
+    if (!isOnline()) {
+      setFetchError('Offline mode: notifications cannot be updated until you reconnect.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
+    if (!token) {
+      setFetchError('Please log in to update notifications.');
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
@@ -114,9 +153,9 @@ export default function NotificationsPage() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-      );
+      const updated = notifications.map((n) => (n._id === id ? { ...n, isRead: true } : n));
+      setNotifications(updated);
+      writeOfflineCache('offlineNotifications', updated);
     } catch (err) {
       setFetchError('Failed to update notification.');
     }
@@ -138,11 +177,17 @@ export default function NotificationsPage() {
           <button
             className="notifications-mark-all-btn"
             onClick={handleMarkAllRead}
-            disabled={unreadCount === 0}
+            disabled={unreadCount === 0 || !online}
           >
             Mark All Read
           </button>
         </div>
+
+        {usingOfflineNotifications && (
+          <p className="offline-info">
+            Offline mode: showing cached notifications. Updates are disabled until you reconnect.
+          </p>
+        )}
 
         {loading && <p>Loading notifications...</p>}
 

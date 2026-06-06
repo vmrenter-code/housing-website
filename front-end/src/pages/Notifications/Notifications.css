@@ -178,6 +178,15 @@
   }
 }
 
+.offline-info {
+  background: #fffbdb;
+  color: #6b5000;
+  padding: 10px 12px;
+  margin: 12px 0;
+  border-radius: 6px;
+  border: 1px solid #f7e5a5;
+}
+
 .notifications-error {
   color: #b00020;
   font-weight: bold;
