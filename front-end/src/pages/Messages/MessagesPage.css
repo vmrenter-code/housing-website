@@ -54,3 +54,29 @@
 .reply-box button{
     width:120px
 }
+
+/* Responsive: stack threads above conversation on small screens */
+@media (max-width: 900px) {
+    .messages-main{flex-direction:column;gap:8px;padding:12px}
+    .threads-list{width:100%;border-right:none;border-bottom:1px solid #eee;padding-right:0;padding-bottom:8px}
+    .threads-list ul{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+    .threads-list li{min-width:180px;padding:10px}
+    .conversation{width:100%;padding:8px}
+    .messages-log{max-height:50vh}
+    .reply-box textarea{height:72px}
+    .reply-box button{width:96px}
+    .mobile-toggle{display:block;margin-bottom:8px}
+    .threads-list.hidden-mobile{display:none}
+}
+
+/* Mobile small: make touch targets larger */
+@media (max-width: 480px) {
+    .threads-list li{min-width:220px;padding:12px;font-size:14px}
+    .reply-box textarea{height:96px}
+    .reply-box button{width:100px}
+}
+
+/* Toggle button (hidden on desktop) */
+.mobile-toggle{display:none}
+.mobile-toggle button{background:#2f66d0;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+.messages-error{color:#b00}

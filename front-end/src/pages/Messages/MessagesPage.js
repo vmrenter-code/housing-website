@@ -26,6 +26,7 @@ export default function MessagesPage() {
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [showThreads, setShowThreads] = useState(true);
   const currentUser = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem('user') || 'null');
@@ -159,7 +160,10 @@ export default function MessagesPage() {
     <div className="messages-page">
       <Navbar />
       <main className="messages-main">
-        <aside className="threads-list">
+        <aside className={`threads-list ${!showThreads ? 'hidden-mobile' : ''}`}>
+          <div className="mobile-toggle">
+            <button onClick={() => setShowThreads((s) => !s)}>{showThreads ? 'Hide' : 'Show'} conversations</button>
+          </div>
           <h3>Conversations</h3>
           {loading && <p>Loading conversations...</p>}
           {!loading && threads.length === 0 && <p>No messages yet.</p>}
@@ -169,7 +173,10 @@ export default function MessagesPage() {
               <li
                 key={thread.key}
                 className={thread.key === selectedThreadKey ? 'active' : ''}
-                onClick={() => setSelectedThreadKey(thread.key)}
+                onClick={() => {
+                  setSelectedThreadKey(thread.key);
+                  if (window && window.innerWidth && window.innerWidth <= 900) setShowThreads(false);
+                }}
               >
                 <strong>{thread.title}</strong>
                 <div className="preview">{thread.preview}</div>
@@ -179,7 +186,12 @@ export default function MessagesPage() {
         </aside>
 
         <section className="conversation">
-          <h3>Conversation</h3>
+          <h3>
+            {window && window.innerWidth && window.innerWidth <= 900 && (
+              <button style={{marginRight:8}} onClick={() => setShowThreads(true)}>Back</button>
+            )}
+            Conversation
+          </h3>
           {!selectedThread && !loading && <p>Select a conversation to view messages.</p>}
 
           {selectedThread && (
