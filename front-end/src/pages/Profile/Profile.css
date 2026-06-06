@@ -222,4 +222,13 @@
     .managed-listing-item {
         flex-direction: column;
     }
+
+    .offline-banner {
+        background: #fffbdb;
+        border: 1px solid #f7e5a5;
+        color: #6b5000;
+        padding: 12px;
+        margin: 16px 0;
+        border-radius: 8px;
+    }
 }

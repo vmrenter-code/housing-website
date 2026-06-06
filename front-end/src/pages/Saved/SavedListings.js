@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import listings from '../../data/mockListings';
+import useOnlineStatus from '../../hooks/useOnlineStatus';
 import './SavedListings.css';
 
 export default function SavedListings() {
   const navigate = useNavigate();
   const [savedIds, setSavedIds] = useState([]);
+  const online = useOnlineStatus();
 
   useEffect(() => {
     try {
@@ -35,6 +37,9 @@ export default function SavedListings() {
       <Navbar />
       <main style={{ padding: 24 }}>
         <h2>Saved Listings</h2>
+        {!online && (
+          <p className="offline-info">Offline mode: saved listing IDs are available locally.</p>
+        )}
         {savedListings.length === 0 ? (
           <div>No saved listings yet.</div>
         ) : (

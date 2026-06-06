@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_BASE } from '../../utils';
+import { API_BASE, isOnline, readOfflineCache, writeOfflineCache } from '../../utils';
 import ErrorDialog from '../../components/ErrorDialog';
 
 export default function AccountSection({ user, setUser }) {
@@ -20,7 +20,12 @@ export default function AccountSection({ user, setUser }) {
     const handleAccountSubmit = async (event) => {
         event.preventDefault();
         const token = localStorage.getItem('token');
+
         if (!token) return;
+        if (!isOnline()) {
+            setAccountError('Offline mode: account updates require a network connection.');
+            return;
+        }
 
         setIsSavingAccount(true);
         setAccountMessage('');
@@ -51,13 +56,22 @@ export default function AccountSection({ user, setUser }) {
                 throw new Error(data.message || 'Unable to update account information');
             }
 
-            setUser((prev) => ({
-                ...prev,
-                fullName: data.fullName || prev.fullName,
-                email: data.email || prev.email,
-                role: data.role || prev.role,
-                university: data.university || (data.role === 'student' ? prev.university : ''),
-            }));
+            const updatedUser = {
+                ...user,
+                fullName: data.fullName || user.fullName,
+                email: data.email || user.email,
+                role: data.role || user.role,
+                university: data.university || (data.role === 'student' ? user.university : ''),
+            };
+            setUser(updatedUser);
+
+            const cachedProfile = readOfflineCache('offlineProfile') || {};
+            writeOfflineCache('offlineProfile', {
+                ...cachedProfile,
+                ...updatedUser,
+                preferences: cachedProfile.preferences,
+                notificationSettings: cachedProfile.notificationSettings,
+            });
             setAccountMessage('Account information updated successfully');
         } catch (err) {
             setAccountError(err.message || 'Unable to update account information');
