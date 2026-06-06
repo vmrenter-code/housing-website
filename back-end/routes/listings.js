@@ -94,8 +94,7 @@ async function createMatchNotifications(listing) {
 /* GET all listings (supports query params: q, minPrice, maxPrice, bedrooms, housingType, university) */
 router.get('/', async (req, res) => {
     try {
-        const { q, minPrice, maxPrice, bedrooms, housingType, university } = req.query;
-        const filter = {};
+        const { q, minPrice, maxPrice, bedrooms, housingType, university, maxDistance } = req.query;        const filter = {};
 
         if (q) {
             const regex = new RegExp(q.trim(), 'i');
@@ -122,6 +121,10 @@ router.get('/', async (req, res) => {
 
         if (university) {
             filter.university = new RegExp(university.trim(), 'i');
+        }
+
+        if (maxDistance !== undefined) {
+            filter.distanceToCampus = { $lte: Number(maxDistance) };
         }
 
         const listings = await Listing.find(filter)

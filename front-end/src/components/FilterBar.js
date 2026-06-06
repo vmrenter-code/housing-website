@@ -6,14 +6,17 @@ export default function FilterBar({
   onPriceChange,
   onBedroomsChange,
   onHomeTypeChange,
+  onDistanceChange,
   priceRange,
   selectedBedrooms,
   selectedHomeTypes,
+  selectedDistance,
 }) {
   const [sortBy, setSortBy] = useState('relevance');
   const [openFilter, setOpenFilter] = useState(null);
   const [priceMin, setPriceMin] = useState(priceRange?.min || 0);
   const [priceMax, setPriceMax] = useState(priceRange?.max || 2000);
+  const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
 
   const handleFilterToggle = (filterName) => {
     setOpenFilter(openFilter === filterName ? null : filterName);
@@ -52,7 +55,7 @@ export default function FilterBar({
 
   return (
     <div className="filter-bar">
-      <div className="filter-bar-left">
+      <div className={`filter-bar-left ${mobileFiltersVisible ? 'mobile-expanded' : ''}`}>
         <div className="filter-bar-item">
           <button
             type="button"
@@ -141,10 +144,53 @@ export default function FilterBar({
           )}
         </div>
 
-        <button type="button" className="filter-bar-btn filter-bar-btn-all">
-          All Filters
-        </button>
+        <div className="filter-bar-item filter-bar-distance">
+          <button
+            type="button"
+            className="filter-bar-btn"
+            onClick={() => handleFilterToggle('distance')}
+          >
+            Distance
+          </button>
+
+          {openFilter === 'distance' && (
+            <div className="filter-dropdown">
+              <div className="filter-group">
+                <label>Distance from campus</label>
+
+                {[
+                  { label: 'Any distance', value: 'any' },
+                  { label: 'Within 0.5 mi', value: '0.5' },
+                  { label: 'Within 1 mi', value: '1' },
+                  { label: 'Within 2 mi', value: '2' },
+                  { label: 'Within 5 mi', value: '5' },
+                ].map((option) => (
+                  <label key={option.value} className="checkbox-label">
+                    <input
+                      type="radio"
+                      name="distance"
+                      checked={selectedDistance === option.value}
+                      onChange={() => onDistanceChange(option.value)}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="filter-bar-item filter-bar-all-item">
+          <button
+            type="button"
+            className="filter-bar-btn filter-bar-btn-all"
+            onClick={() => setMobileFiltersVisible(!mobileFiltersVisible)}
+          >
+            All Filters
+          </button>
+        </div>
       </div>
+
 
       <div className="filter-bar-right">
         <label htmlFor="sort-select" className="filter-bar-label">
