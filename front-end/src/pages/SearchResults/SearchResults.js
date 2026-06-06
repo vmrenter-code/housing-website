@@ -7,6 +7,7 @@ import SaveButton from '../../components/SaveButton';
 import { API_BASE } from '../../utils.js';
 import '../Landing/LandingPage.css';
 import './SearchResults.css';
+import ShareButton from '../../components/ShareButton';
 
 export default function SearchResults() {
     const navigate = useNavigate();
@@ -145,6 +146,7 @@ export default function SearchResults() {
                                     </button>
                                 </div>
                                 <SaveButton listingId={listing._id} variant="icon" />
+                                <ShareButton listing={listing} />
                             </div>
                         ))}
                     </div>

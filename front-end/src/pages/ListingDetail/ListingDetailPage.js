@@ -6,6 +6,7 @@ import SaveButton from '../../components/SaveButton';
 import { API_BASE, readOfflineCache, writeOfflineCache } from '../../utils.js';
 import useOnlineStatus from '../../hooks/useOnlineStatus';
 import './ListingDetailPage.css';
+import ShareButton from '../../components/ShareButton';
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -241,7 +242,7 @@ export default function ListingDetailPage() {
 
             <div className="contact-actions">
               <SaveButton listingId={listing._id} />
-              <button>Share</button>
+              <ShareButton listing={listing} />
             </div>
           </aside>
         </section>
