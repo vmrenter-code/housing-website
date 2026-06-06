@@ -130,7 +130,15 @@ export default function SignUp() {
 
                 <ConditionalField role={formData.role} showFor={["student", "landlord/agent"]}>
                     <p className="form-link">
-                        Already have an account? <a href="/login">Log In</a>
+                        Already have an account?{' '}
+                        <button
+                            type="button"
+                            className="link-button"
+                            style={{ background: 'none', border: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                            onClick={() => navigate('/login')}
+                        >
+                            Log In
+                        </button>
                     </p>
                 </ConditionalField>
             </AuthCard>
