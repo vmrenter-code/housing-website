@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { API_BASE } from '../../utils';
+import useOnlineStatus from '../../hooks/useOnlineStatus';
+import { API_BASE, isOnline, readOfflineCache, writeOfflineCache } from '../../utils';
 import './SavedListings.css';
 
 export default function SavedListings() {
@@ -10,17 +11,34 @@ export default function SavedListings() {
   const [savedListings, setSavedListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [usingOfflineSaved, setUsingOfflineSaved] = useState(false);
+  const online = useOnlineStatus();
 
   const fetchSavedListings = async () => {
+    const cachedSavedListings = readOfflineCache('offlineSavedListings') || [];
+
+    setLoading(true);
+    setFetchError(null);
+    setUsingOfflineSaved(false);
+
+    if (!online) {
+      if (cachedSavedListings.length > 0) {
+        setSavedListings(cachedSavedListings);
+        setUsingOfflineSaved(true);
+      } else {
+        setFetchError('Offline mode: no cached saved listings are available.');
+      }
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('token');
 
     if (!token) {
       setFetchError('Please log in to view saved listings.');
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
-    setFetchError(null);
 
     try {
       const res = await fetch(`${API_BASE}/saved-listings`, {
@@ -31,8 +49,13 @@ export default function SavedListings() {
 
       const data = await res.json();
       setSavedListings(data);
-    } catch {
-      setFetchError('Failed to load saved listings.');
+      writeOfflineCache('offlineSavedListings', data);
+    } catch (err) {
+      if (cachedSavedListings.length > 0) {
+        setSavedListings(cachedSavedListings);
+        setUsingOfflineSaved(true);
+      }
+      setFetchError('Failed to load saved listings. Showing cached results if available.');
     } finally {
       setLoading(false);
     }
@@ -40,14 +63,23 @@ export default function SavedListings() {
 
   useEffect(() => {
     fetchSavedListings();
-  }, []);
+  }, [online]);
 
   const handleView = (listingId) => {
     navigate(`/listing/${listingId}`);
   };
 
   const handleRemove = async (savedListingId) => {
+    if (!isOnline()) {
+      alert('Offline mode: unable to remove saved listing until you reconnect.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to remove saved listings.');
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE}/saved-listings/${savedListingId}`, {
@@ -57,9 +89,11 @@ export default function SavedListings() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      setSavedListings((prev) =>
-        prev.filter((item) => item._id !== savedListingId)
-      );
+      setSavedListings((prev) => {
+        const updated = prev.filter((item) => item._id !== savedListingId);
+        writeOfflineCache('offlineSavedListings', updated);
+        return updated;
+      });
     } catch {
       alert('Unable to remove saved listing.');
     }
@@ -71,6 +105,12 @@ export default function SavedListings() {
 
       <main style={{ padding: 24 }}>
         <h2>Saved Listings</h2>
+
+        {usingOfflineSaved && (
+          <p className="offline-info">
+            Offline mode: showing cached saved listings. You can view listings, but removals require reconnecting.
+          </p>
+        )}
 
         {loading && <p>Loading saved listings...</p>}
 
@@ -116,7 +156,11 @@ export default function SavedListings() {
                     >
                       View
                     </button>
-                    <button onClick={() => handleRemove(savedItem._id)}>
+                    <button
+                      onClick={() => handleRemove(savedItem._id)}
+                      disabled={!online}
+                      style={{ opacity: online ? 1 : 0.5 }}
+                    >
                       Remove
                     </button>
                   </div>
