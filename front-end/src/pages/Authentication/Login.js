@@ -93,7 +93,15 @@ export default function Login() {
                             </button>
 
                             <p className="form-link">
-                                Don't have an account? <a href="/signup">Sign Up</a>
+                                Don't have an account?{' '}
+                                <button
+                                    type="button"
+                                    className="link-button"
+                                    style={{ background: 'none', border: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                                    onClick={() => navigate('/signup')}
+                                >
+                                    Sign Up
+                                </button>
                             </p>
                         </>
                     </ConditionalField>
